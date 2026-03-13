@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Bulbizarre Color Palette */
+    --bulbi-primary: #8ebca8; /* Couleur Bulbizarre */
+    --bulbi-secondary: #4CAF7D;
+    --bulbi-accent: #1B5E3B;
+    --bulbi-highlight: #fa72aa;
+    --bulbi-bg: #F0F7F3;
+    --bulbi-surface: #FFFFFF;
+    --bulbi-text: #1A2E23;
+    --bulbi-text-secondary: #4A6B57;
+    --bulbi-border: #C8E6D5;
+    --bulbi-overlay: #9e579b; /* Fleur */
+    --bulbi-link: #1B7A4A;
+    --bulbi-red: #E85D5D;
+
+    --radius: 0.5rem;
+    --background: 140 30% 97%;
+    --foreground: 150 30% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 30% 10%;
+    --primary: 152 50% 36%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 148 30% 90%;
+    --secondary-foreground: 150 30% 15%;
+    --muted: 140 20% 94%;
+    --muted-foreground: 150 15% 40%;
+    --accent: 148 30% 90%;
+    --accent-foreground: 150 30% 15%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 145 30% 82%;
+    --input: 145 30% 82%;
+    --ring: 152 50% 36%;
+    --chart-1: 152 50% 36%;
+    --chart-2: 148 40% 50%;
+    --chart-3: 140 35% 45%;
+    --chart-4: 155 45% 55%;
+    --chart-5: 160 40% 60%;
+    --sidebar-background: 152 55% 18%;
+    --sidebar-foreground: 140 20% 90%;
+    --sidebar-primary: 148 50% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 152 40% 25%;
+    --sidebar-accent-foreground: 140 20% 90%;
+    --sidebar-border: 152 40% 25%;
+    --sidebar-ring: 152 50% 36%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-color: var(--bulbi-bg);
+    color: var(--bulbi-text);
+    font-family: "Inter", sans-serif;
+    line-height: 1.6;
+  }
+}
+
+@layer components {
+  /* Wiki-style typography */
+  .wiki-heading {
+    font-family: "Libre Baskerville", Georgia, serif;
+    color: var(--bulbi-text);
+    border-bottom: 1px solid var(--bulbi-border);
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .wiki-link {
+    color: var(--bulbi-link);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .wiki-link:hover {
+    text-decoration: underline;
+    color: var(--bulbi-primary);
+  }
+
+  /* Wiki infobox styles */
+  .wiki-infobox {
+    background: var(--bulbi-bg);
+    border: 2px solid var(--bulbi-primary);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .wiki-infobox-header {
+    background: var(--bulbi-accent);
+    color: white;
+    padding: 8px 12px;
+    font-weight: 700;
+    text-align: center;
+    font-family: "Libre Baskerville", Georgia, serif;
+  }
+
+  /* Table of contents */
+  .wiki-toc {
+    background: var(--bulbi-bg);
+    border: 1px solid var(--bulbi-border);
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bulbi-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bulbi-overlay);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bulbi-secondary);
+}
