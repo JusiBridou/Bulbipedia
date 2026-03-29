@@ -1,2 +1,13 @@
-/node_modules/
+node_modules
+dist
+coverage
+*.log
 
+# Env files
+.env
+.env.*
+!.env.example
+
+# Temporary
+.tmp
+tmp

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Menu, X, BookOpen, Shuffle, Users, Home } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { toast } from "@/components/ui/sonner";
 
 const LOGO_URL = "https://storage.gra.cloud.ovh.net/v1/AUTH_f872c5d9108a481eafb02f903c46dbf0/nantral-platform-prod/group/group/icon/2024/2024-12-13-bulbizart-1734109982.png";
 
@@ -8,6 +11,13 @@ export default function WikiHeader() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  const { data: me } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => api.auth.me(),
+    enabled: Boolean(api.auth.getToken()),
+    retry: false
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,9 +30,15 @@ export default function WikiHeader() {
   const navLinks = [
     { to: "/", label: "Accueil", icon: Home },
     { to: "/categories", label: "Catégories", icon: BookOpen },
-    { to: "/article/bulbizarre", label: "Article aléatoire", icon: Shuffle },
+    { to: "/nouvel-article", label: "Publier", icon: Shuffle },
     { to: "/categories", label: "Communauté", icon: Users },
   ];
+
+  const handleLogout = () => {
+    api.auth.logout();
+    toast.success("Déconnecté");
+    window.location.href = "/";
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--bulbi-accent)] shadow-lg">
@@ -72,6 +88,33 @@ export default function WikiHeader() {
                 <span>{link.label}</span>
               </Link>
             ))}
+
+            {me ? (
+              <>
+                <span className="px-3 py-1.5 text-white/90 text-sm">@{me.username}</span>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/connexion"
+                  className="px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  to="/inscription"
+                  className="px-3 py-1.5 bg-white text-[var(--bulbi-accent)] rounded-md transition-colors text-sm font-medium"
+                >
+                  Inscription
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile menu button */}
@@ -112,6 +155,32 @@ export default function WikiHeader() {
               <span>{link.label}</span>
             </Link>
           ))}
+
+          {me ? (
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-3 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"
+            >
+              Déconnexion (@{me.username})
+            </button>
+          ) : (
+            <>
+              <Link
+                to="/connexion"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"
+              >
+                <span>Connexion</span>
+              </Link>
+              <Link
+                to="/inscription"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2.5 text-white bg-white/20 hover:bg-white/30 rounded-md transition-colors text-sm"
+              >
+                <span>Inscription</span>
+              </Link>
+            </>
+          )}
         </div>
       )}
     </header>

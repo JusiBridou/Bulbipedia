@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bulbipedia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "55432:5432"
+    volumes:
+      - bulbipedia_pg_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/bulbipedia?schema=public
+      JWT_SECRET: change-me-in-production
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "4000:4000"
+
+volumes:
+  bulbipedia_pg_data:

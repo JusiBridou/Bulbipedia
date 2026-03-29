@@ -1,78 +1,10 @@
 import { useState, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import WikiHeader from "@/components/WikiHeader";
 import WikiSidebar from "@/components/WikiSidebar";
 import { Search, Filter, FileText } from "lucide-react";
-
-interface SearchResult {
-  title: string;
-  excerpt: string;
-  categories: string[];
-  lastModified: string;
-}
-
-const allArticles: SearchResult[] = [
-  {
-    title: "Bulbizarre",
-    excerpt: "Bulbizarre (Bulbasaur) est un Pokémon de type Plante/Poison de la première génération. Il est le premier Pokémon du Pokédex National et l'un des trois Pokémon de départ proposés par le Professeur Chen.",
-    categories: ["Plante", "Poison", "Génération I", "Pokémon de départ"],
-    lastModified: "9 mars 2026",
-  },
-  {
-    title: "Herbizarre",
-    excerpt: "Herbizarre (Ivysaur) est un Pokémon de type Plante/Poison. Il est l'évolution de Bulbizarre à partir du niveau 16. Le bourgeon sur son dos s'est transformé en une grande fleur qui absorbe la lumière du soleil.",
-    categories: ["Plante", "Poison", "Génération I"],
-    lastModified: "8 mars 2026",
-  },
-  {
-    title: "Florizarre",
-    excerpt: "Florizarre (Venusaur) est un Pokémon de type Plante/Poison. Il est l'évolution finale de Bulbizarre. La fleur sur son dos est maintenant en pleine floraison et dégage un parfum apaisant.",
-    categories: ["Plante", "Poison", "Génération I"],
-    lastModified: "7 mars 2026",
-  },
-  {
-    title: "Pikachu",
-    excerpt: "Pikachu est un Pokémon de type Électrik de la première génération. Il est la mascotte officielle de la franchise Pokémon et le partenaire de Sacha dans l'anime.",
-    categories: ["Électrik", "Génération I"],
-    lastModified: "9 mars 2026",
-  },
-  {
-    title: "Salamèche",
-    excerpt: "Salamèche (Charmander) est un Pokémon de type Feu de la première génération. C'est l'un des trois Pokémon de départ proposés par le Professeur Chen dans Pokémon Rouge et Bleu.",
-    categories: ["Feu", "Génération I", "Pokémon de départ"],
-    lastModified: "6 mars 2026",
-  },
-  {
-    title: "Carapuce",
-    excerpt: "Carapuce (Squirtle) est un Pokémon de type Eau de la première génération. C'est l'un des trois Pokémon de départ proposés par le Professeur Chen.",
-    categories: ["Eau", "Génération I", "Pokémon de départ"],
-    lastModified: "5 mars 2026",
-  },
-  {
-    title: "Dracaufeu",
-    excerpt: "Dracaufeu (Charizard) est un Pokémon de type Feu/Vol. Il est l'évolution finale de Salamèche et l'un des Pokémon les plus populaires de la franchise.",
-    categories: ["Feu", "Vol", "Génération I"],
-    lastModified: "8 mars 2026",
-  },
-  {
-    title: "Mewtwo",
-    excerpt: "Mewtwo est un Pokémon légendaire de type Psy de la première génération. Il a été créé par manipulation génétique à partir de l'ADN de Mew.",
-    categories: ["Psy", "Génération I", "Pokémon légendaires"],
-    lastModified: "4 mars 2026",
-  },
-  {
-    title: "Évoli",
-    excerpt: "Évoli (Eevee) est un Pokémon de type Normal connu pour sa capacité unique à évoluer en huit formes différentes selon les conditions.",
-    categories: ["Normal", "Génération I"],
-    lastModified: "7 mars 2026",
-  },
-  {
-    title: "Rondoudou",
-    excerpt: "Rondoudou (Jigglypuff) est un Pokémon de type Normal/Fée de la première génération. Il est connu pour sa berceuse qui endort tous ceux qui l'écoutent.",
-    categories: ["Normal", "Fée", "Génération I"],
-    lastModified: "3 mars 2026",
-  },
-];
+import { api } from "@/lib/api";
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -80,22 +12,35 @@ export default function SearchPage() {
   const [localQuery, setLocalQuery] = useState(query);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  const { data: allArticles = [], isLoading } = useQuery({
+    queryKey: ["articles", query],
+    queryFn: () => api.articles.search({ q: query || undefined })
+  });
+
   const results = useMemo(() => {
-    const q = query.toLowerCase();
-    return allArticles.filter((article) => {
-      const matchesQuery =
-        !q ||
-        article.title.toLowerCase().includes(q) ||
-        article.excerpt.toLowerCase().includes(q) ||
-        article.categories.some((c) => c.toLowerCase().includes(q));
+    return allArticles
+      .map((article) => ({
+        title: article.title,
+        excerpt: article.summary || article.content.slice(0, 180),
+        categories: [article.author?.username ? `Auteur: ${article.author.username}` : "Communauté"],
+        slug: article.slug,
+        ratingAverage: article.ratingAverage ?? 0,
+        ratingCount: article.ratingCount ?? 0,
+        lastModified: new Date(article.updatedAt).toLocaleDateString("fr-FR")
+      }))
+      .filter((article) => {
+        const q = query.toLowerCase();
+        const matchesQuery =
+          !q ||
+          article.title.toLowerCase().includes(q) ||
+          article.excerpt.toLowerCase().includes(q) ||
+          article.categories.some((c) => c.toLowerCase().includes(q));
 
-      const matchesCategory =
-        !selectedCategory ||
-        article.categories.includes(selectedCategory);
+        const matchesCategory = !selectedCategory || article.categories.includes(selectedCategory);
 
-      return matchesQuery && matchesCategory;
-    });
-  }, [query, selectedCategory]);
+        return matchesQuery && matchesCategory;
+      });
+  }, [allArticles, query, selectedCategory]);
 
   const allCategories = useMemo(() => {
     const cats = new Set<string>();
@@ -183,10 +128,16 @@ export default function SearchPage() {
 
             {/* Results */}
             <div className="space-y-3">
+              {isLoading && (
+                <div className="bg-white rounded-lg border border-[var(--bulbi-border)] p-6 text-center text-[var(--bulbi-text-secondary)]">
+                  Chargement des articles...
+                </div>
+              )}
+
               {results.map((result) => (
                 <Link
                   key={result.title}
-                  to="/article/bulbizarre"
+                  to={`/article/${result.slug}`}
                   className="block bg-white rounded-lg border border-[var(--bulbi-border)] p-4 hover:border-[var(--bulbi-primary)] hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-start gap-3">
@@ -210,7 +161,7 @@ export default function SearchPage() {
                           ))}
                         </div>
                         <span className="text-xs text-[var(--bulbi-text-secondary)] shrink-0">
-                          {result.lastModified}
+                          Modifié le {result.lastModified} · ★ {result.ratingAverage.toFixed(1)} ({result.ratingCount})
                         </span>
                       </div>
                     </div>

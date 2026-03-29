@@ -8,13 +8,12 @@ let configLoading = true;
 
 // Default fallback configuration
 const defaultConfig = {
-  API_BASE_URL: 'http://127.0.0.1:8000', // Only used if runtime config fails to load
+  API_BASE_URL: 'http://127.0.0.1:4000',
 };
 
 // Function to load runtime configuration
 export async function loadRuntimeConfig(): Promise<void> {
   try {
-    console.log('🔧 DEBUG: Starting to load runtime config...');
     // Try to load configuration from a config endpoint
     const response = await fetch('/api/config');
     if (response.ok) {
@@ -29,18 +28,12 @@ export async function loadRuntimeConfig(): Promise<void> {
         );
       }
     } else {
-      console.log(
-        '🔧 DEBUG: Config fetch failed with status:',
-        response.status
-      );
+      console.log('Config fetch failed with status:', response.status);
     }
   } catch (error) {
     console.log('Failed to load runtime config, using defaults:', error);
   } finally {
     configLoading = false;
-    console.log(
-      '🔧 DEBUG: Config loading finished, configLoading set to false'
-    );
   }
 }
 

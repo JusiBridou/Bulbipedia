@@ -1,6 +1,6 @@
 # Bulbipedia Frontend
 
-Frontend React + Vite de ton encyclopedie.
+Frontend React + Vite de l'encyclopedie.
 
 ## Stack technique
 
@@ -71,6 +71,8 @@ corepack pnpm run preview
 
 - L'alias `@` pointe vers `src`.
 - Il faut utiliser `vite.config.ts` pour que l'alias fonctionne.
+- Le frontend appelle le backend sur `http://127.0.0.1:4000` par defaut.
+- Tu peux surcharger l'URL via `VITE_API_BASE_URL`.
 
 ## Depannage
 

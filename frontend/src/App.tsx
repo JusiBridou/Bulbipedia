@@ -9,6 +9,9 @@ import SearchPage from './pages/SearchPage';
 import NotFound from './pages/NotFound';
 import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import NewArticlePage from './pages/NewArticlePage';
 
 const queryClient = new QueryClient();
 
@@ -24,6 +27,9 @@ const App = () => (
           <Route path="/recherche" element={<SearchPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/auth/error" element={<AuthError />} />
+          <Route path="/connexion" element={<LoginPage />} />
+          <Route path="/inscription" element={<RegisterPage />} />
+          <Route path="/nouvel-article" element={<NewArticlePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
