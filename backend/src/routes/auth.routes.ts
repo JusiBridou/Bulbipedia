@@ -20,6 +20,7 @@ authRouter.post(
         data: {
           email: input.email.toLowerCase(),
           username: input.username,
+          avatarUrl: input.avatarUrl,
           passwordHash
         }
       });
@@ -37,6 +38,7 @@ authRouter.post(
           id: user.id,
           email: user.email,
           username: user.username,
+          avatarUrl: user.avatarUrl,
           role: user.role
         }
       });
@@ -86,6 +88,7 @@ authRouter.post(
         id: user.id,
         email: user.email,
         username: user.username,
+        avatarUrl: user.avatarUrl,
         role: user.role
       }
     });
@@ -102,6 +105,7 @@ authRouter.get(
         id: true,
         email: true,
         username: true,
+        avatarUrl: true,
         role: true,
         createdAt: true
       }

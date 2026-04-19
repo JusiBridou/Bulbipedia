@@ -15,10 +15,15 @@ Cette documentation suit une architecture en cascade:
 - Modele de donnees: `architecture/04-data-model.md`
 - Setup local: `operations/01-local-setup.md`
 - Verification qualite: `operations/02-quality-checks.md`
+- Roadmap projet: `operations/03-project-roadmap.md`
+- Runbook de deploiement: `operations/04-deployment-runbook.md`
+- Resume des sessions: `SESSION_SUMMARY.md`
 
 ## Lecture recommandee pour reprise
 
-1. Lire `architecture/01-overview.md`.
-2. Lire `operations/01-local-setup.md` puis demarrer le projet.
-3. Valider avec `operations/02-quality-checks.md`.
-4. Ouvrir `TODO.md` a la racine pour suivre les prochaines actions.
+1. Lire `SESSION_SUMMARY.md`.
+2. Lire `architecture/01-overview.md`.
+3. Lire `operations/03-project-roadmap.md`.
+4. Lire `operations/01-local-setup.md` puis demarrer le projet.
+5. Valider avec `operations/02-quality-checks.md`.
+6. Ouvrir `TODO.md` a la racine pour suivre les prochaines actions.

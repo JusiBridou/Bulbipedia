@@ -5,6 +5,7 @@ API REST Bulbipedia (auth, articles, notes) avec Express + TypeScript + Prisma +
 ## Fonctionnalites
 
 - Inscription/connexion via JWT
+- Profil utilisateur avec `avatarUrl` optionnel
 - CRUD d'articles avec ownership auteur
 - Notation des articles (1 a 5)
 - Endpoints de sante et stats de notation
@@ -54,6 +55,17 @@ npm --prefix backend run dev
 
 API disponible sur `http://localhost:4000`.
 
+## Tests API
+
+```powershell
+npm --prefix backend run test:api
+```
+
+Couverture actuelle:
+- ACL admin (cas 401/403 sur `/api/admin/*`).
+- Auth (validation payload register/login + `/api/auth/me` non authentifie).
+- Articles et ratings (cas non authentifies sur endpoints proteges).
+
 ## Endpoints
 
 - `GET /api/health`
@@ -68,6 +80,10 @@ API disponible sur `http://localhost:4000`.
 - `DELETE /api/articles/:slug`
 - `GET /api/articles/:slug/ratings`
 - `POST /api/articles/:slug/rating`
+- `GET /api/admin/users` (ADMIN)
+- `DELETE /api/admin/users/:id` (ADMIN)
+- `GET /api/admin/articles` (ADMIN)
+- `DELETE /api/admin/articles/:id` (ADMIN)
 
 ## Mise en ligne (sans Docker)
 
@@ -88,9 +104,32 @@ API disponible sur `http://localhost:4000`.
 - `../docs/architecture/02-backend.md`
 - `../docs/architecture/04-data-model.md`
 - `../docs/operations/01-local-setup.md`
+- `../docs/operations/04-deployment-runbook.md`
 
 ## Securite
 
 - Utiliser HTTPS en production.
 - Definir un `JWT_SECRET` robuste.
 - Restreindre `CORS_ORIGIN` au domaine frontend.
+
+## Maintenance dependances (controlee)
+
+Procedure recommandee:
+
+```powershell
+npm --prefix backend outdated
+npm --prefix backend audit --json
+```
+
+Appliquer uniquement des upgrades compatibles (patch/minor) puis valider:
+
+```powershell
+npm --prefix backend install
+npm --prefix backend run build
+npm --prefix backend audit --json
+```
+
+Etat au 2026-04-19:
+- `prisma` et `@prisma/client` mis a jour en `^6.19.3`.
+- `path-to-regexp` force en `0.1.13` via `overrides` pour corriger une vuln transitive Express 4.
+- Resultat audit backend: `0` vuln.

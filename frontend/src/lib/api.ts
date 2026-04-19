@@ -7,6 +7,7 @@ export type User = {
 	id: string;
 	email: string;
 	username: string;
+	avatarUrl?: string | null;
 	role: "USER" | "ADMIN";
 	createdAt?: string;
 };
@@ -32,6 +33,32 @@ export type Article = {
 export type AuthResponse = {
 	token: string;
 	user: User;
+};
+
+export type AdminUser = {
+	id: string;
+	email: string;
+	username: string;
+	avatarUrl?: string | null;
+	role: "USER" | "ADMIN";
+	createdAt: string;
+	_count: {
+		articles: number;
+		ratings: number;
+	};
+};
+
+export type AdminArticle = {
+	id: string;
+	slug: string;
+	title: string;
+	published: boolean;
+	createdAt: string;
+	updatedAt: string;
+	author: {
+		id: string;
+		username: string;
+	};
 };
 
 const http = axios.create({
@@ -61,7 +88,7 @@ function getToken() {
 
 export const api = {
 	auth: {
-		async register(payload: { email: string; username: string; password: string }) {
+		async register(payload: { email: string; username: string; password: string; avatarUrl?: string }) {
 			const { data } = await http.post<AuthResponse>("/api/auth/register", payload);
 			setToken(data.token);
 			return data;
@@ -111,6 +138,22 @@ export const api = {
 		async ratings(slug: string) {
 			const { data } = await http.get<{ average: number; count: number }>(`/api/articles/${slug}/ratings`);
 			return data;
+		}
+	},
+	admin: {
+		async users() {
+			const { data } = await http.get<{ users: AdminUser[] }>("/api/admin/users");
+			return data.users;
+		},
+		async deleteUser(userId: string) {
+			await http.delete(`/api/admin/users/${userId}`);
+		},
+		async articles() {
+			const { data } = await http.get<{ articles: AdminArticle[] }>("/api/admin/articles");
+			return data.articles;
+		},
+		async deleteArticle(articleId: string) {
+			await http.delete(`/api/admin/articles/${articleId}`);
 		}
 	}
 };

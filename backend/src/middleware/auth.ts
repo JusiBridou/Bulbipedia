@@ -37,3 +37,15 @@ export function requireRole(role: "USER" | "ADMIN") {
     return next();
   };
 }
+
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return sendError(res, 401, "Unauthorized");
+  }
+
+  if (req.user.role !== "ADMIN") {
+    return sendError(res, 403, "Forbidden");
+  }
+
+  return next();
+}

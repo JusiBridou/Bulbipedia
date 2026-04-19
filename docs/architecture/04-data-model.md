@@ -10,6 +10,15 @@ Le schema de donnees est defini dans `backend/prisma/schema.prisma`.
 - Article
 - Rating
 
+## Champs notables
+
+- User:
+	- `email` (unique)
+	- `username` (unique)
+	- `passwordHash`
+	- `role` (`USER` ou `ADMIN`)
+	- `avatarUrl` (optionnel, URL photo de profil)
+
 ## Relations metier
 
 - Un User peut ecrire plusieurs Article.

@@ -4,6 +4,7 @@
 
 - Bootstrapping: `src/main.tsx`
 - Routing principal: `src/App.tsx`
+- Route admin: `/admin` (page `src/pages/AdminPage.tsx`)
 
 ## Organisation
 
@@ -24,6 +25,7 @@
 1. Auth utilisateur via `/api/auth/*`.
 2. Navigation articles et recherche via `/api/articles`.
 3. Actions auteur (create/update) et notation article.
+4. Administration (role ADMIN): gestion utilisateurs/articles via `/api/admin/*`.
 
 ## Risques techniques identifies
 

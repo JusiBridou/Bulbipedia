@@ -89,8 +89,28 @@ export default function WikiHeader() {
               </Link>
             ))}
 
+            {me?.role === "ADMIN" && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-white hover:bg-white/20 rounded-md transition-colors text-sm"
+              >
+                <span>Admin</span>
+              </Link>
+            )}
+
             {me ? (
               <>
+                {me.avatarUrl ? (
+                  <img
+                    src={me.avatarUrl}
+                    alt={me.username}
+                    className="w-8 h-8 rounded-full object-cover border border-white/30"
+                  />
+                ) : (
+                  <span className="w-8 h-8 rounded-full bg-white/20 text-white text-xs font-semibold flex items-center justify-center border border-white/30">
+                    {me.username.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
                 <span className="px-3 py-1.5 text-white/90 text-sm">@{me.username}</span>
                 <button
                   onClick={handleLogout}
@@ -156,13 +176,39 @@ export default function WikiHeader() {
             </Link>
           ))}
 
-          {me ? (
-            <button
-              onClick={handleLogout}
-              className="w-full text-left px-3 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"
+          {me?.role === "ADMIN" && (
+            <Link
+              to="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 px-3 py-2.5 text-white hover:bg-white/20 rounded-md transition-colors text-sm"
             >
-              Déconnexion (@{me.username})
-            </button>
+              <span>Admin</span>
+            </Link>
+          )}
+
+          {me ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 px-3 py-1">
+                {me.avatarUrl ? (
+                  <img
+                    src={me.avatarUrl}
+                    alt={me.username}
+                    className="w-8 h-8 rounded-full object-cover border border-white/30"
+                  />
+                ) : (
+                  <span className="w-8 h-8 rounded-full bg-white/20 text-white text-xs font-semibold flex items-center justify-center border border-white/30">
+                    {me.username.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <span className="text-white text-sm">@{me.username}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-3 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"
+              >
+                Déconnexion
+              </button>
+            </div>
           ) : (
             <>
               <Link

@@ -7,6 +7,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +16,12 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await api.auth.register({ email, username, password });
+      await api.auth.register({
+        email,
+        username,
+        password,
+        avatarUrl: avatarUrl.trim() ? avatarUrl.trim() : undefined
+      });
       toast.success("Compte créé avec succès");
       navigate("/", { replace: true });
     } catch (error) {
@@ -46,6 +52,13 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
+            className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)]"
+          />
+          <input
+            type="url"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="URL photo de profil (optionnel)"
             className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)]"
           />
           <input
