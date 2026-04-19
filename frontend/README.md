@@ -74,6 +74,12 @@ corepack pnpm run preview
 - Le frontend appelle le backend sur `http://127.0.0.1:4000` par defaut.
 - Tu peux surcharger l'URL via `VITE_API_BASE_URL`.
 
+## Documentation liee
+
+- `../docs/architecture/03-frontend.md`
+- `../docs/operations/01-local-setup.md`
+- `../docs/operations/02-quality-checks.md`
+
 ## Depannage
 
 Si `pnpm` n'est pas reconnu:

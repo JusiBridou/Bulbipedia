@@ -1,45 +1,47 @@
-# Le Bulbipédia
+# Bulbipedia
 
-Ce projet correspond a la creation d'une encyclopedie en ligne centree autour de la liste BDA Bulbiz'art de Centrale Nantes.
+Projet d'encyclopedie en ligne avec frontend React et backend Node.js/Express.
 
-## Structure du projet
+## Structure
 
-- `frontend/`: application React + Vite
-- `backend/`: API REST Node.js + Express + Prisma + PostgreSQL
+- `frontend/`: app React + Vite + TypeScript
+- `backend/`: API REST Express + Prisma + PostgreSQL
+- `docs/`: documentation technique en cascade
+- `TODO.md`: feuille de route de reprise
 
-## Fonctionnalites cibles
+## Demarrage rapide
 
-- Comptes utilisateurs (inscription / connexion)
-- Publication et edition d'articles
-- Notation des articles
-- Mise en ligne avec base de donnees PostgreSQL
-
-## Lancer le frontend
+### 1) Frontend
 
 ```powershell
 corepack pnpm --dir .\frontend i
 corepack pnpm --dir .\frontend run dev
 ```
 
-## Lancer le backend
+### 2) Backend (sans Docker)
+
+Prerequis:
+- Node.js 22+
+- PostgreSQL accessible en local ou a distance
 
 ```powershell
-Copy-Item .env.example .env
-docker compose -f .\backend\docker-compose.yml up -d db
+Copy-Item .\backend\.env.example .\backend\.env
 npm --prefix backend install
 npm --prefix backend run prisma:generate
-if (Test-Path Env:DATABASE_URL) { Remove-Item Env:DATABASE_URL }
 npm --prefix backend run prisma:migrate -- --name init
 npm --prefix backend run prisma:seed
 npm --prefix backend run dev
 ```
 
-Backend sur `http://localhost:4000`.
+Backend: `http://localhost:4000`
 
-Note: PostgreSQL Docker est expose sur `localhost:55432` pour eviter les conflits avec un PostgreSQL local sur `5432`.
+## Documentation
 
-## Prochaines etapes
+- Index docs: `docs/README.md`
+- Architecture globale: `docs/architecture/01-overview.md`
+- Setup local: `docs/operations/01-local-setup.md`
+- Checks qualite: `docs/operations/02-quality-checks.md`
 
-1. Connecter le frontend a l'API backend.
-2. Ajouter l'upload d'images pour les articles.
-3. Deployer frontend + backend (Render/Railway/Vercel + DB managée).
+## Reprise du projet
+
+Le plan de reprise est suivi dans `TODO.md`.

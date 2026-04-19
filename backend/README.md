@@ -1,14 +1,13 @@
 # Bulbipedia Backend
 
-API REST pour Bulbipedia (auth, articles, notes) avec Express + TypeScript + Prisma + PostgreSQL.
+API REST Bulbipedia (auth, articles, notes) avec Express + TypeScript + Prisma + PostgreSQL.
 
 ## Fonctionnalites
 
-- Creation de compte et connexion (JWT)
-- Publication d'articles (brouillon/publication)
-- Edition/suppression de ses propres articles
-- Notation d'articles (1 a 5)
-- Statistiques de notes (moyenne + nombre de votes)
+- Inscription/connexion via JWT
+- CRUD d'articles avec ownership auteur
+- Notation des articles (1 a 5)
+- Endpoints de sante et stats de notation
 
 ## Stack
 
@@ -18,7 +17,7 @@ API REST pour Bulbipedia (auth, articles, notes) avec Express + TypeScript + Pri
 - PostgreSQL
 - Zod
 
-## Demarrage local
+## Demarrage local (sans Docker)
 
 1. Copier les variables d'environnement:
 
@@ -26,13 +25,7 @@ API REST pour Bulbipedia (auth, articles, notes) avec Express + TypeScript + Pri
 Copy-Item .env.example .env
 ```
 
-2. Lancer PostgreSQL via Docker (option recommandee):
-
-```powershell
-docker compose -f .\backend\docker-compose.yml up -d db
-```
-
-Note: le conteneur PostgreSQL expose le port `55432` sur la machine hote pour eviter les conflits avec un PostgreSQL local sur `5432`.
+2. Verifier la connexion PostgreSQL dans `.env` (locale ou distante).
 
 3. Installer les dependances:
 
@@ -47,7 +40,7 @@ npm --prefix backend run prisma:generate
 npm --prefix backend run prisma:migrate -- --name init
 ```
 
-5. Seed de demo (admin + article exemple):
+5. Seed de demo:
 
 ```powershell
 npm --prefix backend run prisma:seed
@@ -61,102 +54,43 @@ npm --prefix backend run dev
 
 API disponible sur `http://localhost:4000`.
 
-## Endpoints principaux
+## Endpoints
 
 - `GET /api/health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
-- `GET /api/auth/me` (Bearer token)
+- `GET /api/auth/me`
 - `GET /api/articles`
-- `GET /api/articles/mine` (Bearer token)
+- `GET /api/articles/mine`
 - `GET /api/articles/:slug`
-- `POST /api/articles` (Bearer token)
-- `PATCH /api/articles/:slug` (Bearer token)
-- `DELETE /api/articles/:slug` (Bearer token)
+- `POST /api/articles`
+- `PATCH /api/articles/:slug`
+- `DELETE /api/articles/:slug`
 - `GET /api/articles/:slug/ratings`
-- `POST /api/articles/:slug/rating` (Bearer token)
+- `POST /api/articles/:slug/rating`
 
-## Exemples rapides
-
-Inscription:
-
-```bash
-curl -X POST http://localhost:4000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@demo.com","username":"userdemo","password":"motdepasse123"}'
-```
-
-Creation d'article (avec token JWT):
-
-```bash
-curl -X POST http://localhost:4000/api/articles \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Mon article","summary":"Resume court","content":"Contenu long d au moins 50 caracteres...","published":true}'
-```
-
-Notation:
-
-```bash
-curl -X POST http://localhost:4000/api/articles/mon-article/rating \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{"value":5}'
-```
-
-## Mise en ligne
-
-### Option 1: Render / Railway (simple)
+## Mise en ligne (sans Docker)
 
 1. Creer une base PostgreSQL managée.
-2. Deployer le dossier `backend` comme service Node.
-3. Variables d'environnement a definir:
-   - `DATABASE_URL`
-   - `JWT_SECRET` (long et aleatoire)
-   - `JWT_EXPIRES_IN` (ex: `7d`)
-   - `CORS_ORIGIN` (URL du frontend en prod)
-   - `PORT` (souvent injecte automatiquement)
-4. Commandes build/start:
-   - Build: `npm install ; npm run prisma:generate ; npm run build ; npm run prisma:deploy`
-   - Start: `npm run start`
+2. Deployer `backend` comme service Node.
+3. Configurer:
+  - `DATABASE_URL`
+  - `JWT_SECRET`
+  - `JWT_EXPIRES_IN`
+  - `CORS_ORIGIN`
+  - `PORT`
+4. Build/start:
+  - Build: `npm install ; npm run prisma:generate ; npm run build ; npm run prisma:deploy`
+  - Start: `npm run start`
 
-### Option 2: Docker
+## Documentation liee
 
-```powershell
-docker compose -f .\backend\docker-compose.yml up -d --build
-```
+- `../docs/architecture/02-backend.md`
+- `../docs/architecture/04-data-model.md`
+- `../docs/operations/01-local-setup.md`
 
-Puis appliquer les migrations dans le conteneur API:
-
-```powershell
-docker compose -f .\backend\docker-compose.yml exec api npm run prisma:deploy
-```
-
-## Depannage
-
-Si `npm --prefix backend run prisma:migrate -- --name init` echoue avec `P1000`:
-
-1. Verifier que Docker DB est lance:
-
-```powershell
-docker compose -f .\backend\docker-compose.yml ps
-```
-
-2. Verifier `DATABASE_URL` dans `backend/.env`:
-
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:55432/bulbipedia?schema=public"
-```
-
-3. Supprimer une variable de session qui pourrait ecraser `.env`:
-
-```powershell
-if (Test-Path Env:DATABASE_URL) { Remove-Item Env:DATABASE_URL }
-```
-
-## Notes securite
+## Securite
 
 - Utiliser HTTPS en production.
-- Changer `JWT_SECRET` avec une valeur robuste.
-- Limiter `CORS_ORIGIN` a ton domaine frontend.
-- Ajouter rate limiting et verification email en prochaine iteration.
+- Definir un `JWT_SECRET` robuste.
+- Restreindre `CORS_ORIGIN` au domaine frontend.
