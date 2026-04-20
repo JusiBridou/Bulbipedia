@@ -36,3 +36,6 @@ tmp/
 .DS_Store
 Thumbs.db
 
+# Sensitive Info
+docs/infos_deployment.md
+

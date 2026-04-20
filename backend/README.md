@@ -96,8 +96,14 @@ Couverture actuelle:
   - `CORS_ORIGIN`
   - `PORT`
 4. Build/start:
-  - Build: `npm install ; npm run prisma:generate ; npm run build ; npm run prisma:deploy`
+  - Build: `npm install ; npm run prisma:generate ; npm run build`
   - Start: `npm run start`
+5. Appliquer les migrations apres deploy depuis le shell Railway du service backend:
+  - `npm run prisma:deploy`
+
+Note Railway:
+- Eviter `prisma:deploy` dans le build command. Sur certaines executions, le host prive
+  `postgres.railway.internal` n'est pas joignable pendant le build (erreur P1001).
 
 ## Documentation liee
 

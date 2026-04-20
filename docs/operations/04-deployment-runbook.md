@@ -86,7 +86,7 @@ Configurer les commandes Railway:
 1. Build Command:
 
 ```bash
-npm install && npm run prisma:generate && npm run build && npm run prisma:deploy
+npm install && npm run prisma:generate && npm run build
 ```
 
 2. Start Command:
@@ -94,6 +94,10 @@ npm install && npm run prisma:generate && npm run build && npm run prisma:deploy
 ```bash
 npm run start
 ```
+
+Pourquoi: pendant la phase build, Railway peut ne pas donner acces au host prive
+`postgres.railway.internal`. Si tu lances `prisma migrate deploy` au build, tu peux avoir
+une erreur P1001 meme si la base est saine.
 
 Apres deploy, verifier le health check:
 
@@ -138,11 +142,20 @@ Si tu utilises un domaine custom plus tard:
 
 ## 8) Etape F - Appliquer les migrations Prisma en prod
 
-Le build command propose inclut deja:
+Apres un deploy backend reussi, lancer la migration depuis Railway (service backend),
+quand le reseau de runtime est actif:
 
 ```bash
 npm run prisma:deploy
 ```
+
+Procedure conseillée:
+
+1. Ouvrir le service backend Railway
+2. Ouvrir un Shell/Command dans ce service
+3. Executer `npm run prisma:deploy`
+4. Verifier le log: "No pending migrations" ou "migrations applied"
+5. Redemarrer le service backend si Railway ne le fait pas automatiquement
 
 Controle a faire dans les logs backend:
 
@@ -198,7 +211,9 @@ LIMIT 20;
 
 3. Erreur migration Prisma
   1. verifier droits DB
-  2. verifier que `prisma:deploy` est lance au build
+  2. sur Railway, ne pas lancer `prisma:deploy` au build
+  3. lancer `npm run prisma:deploy` apres deploy via shell du service backend
+  4. si erreur P1001 sur `postgres.railway.internal`, verifier que la commande est bien lancee en runtime (pas en build)
 
 4. Frontend appelle localhost en prod
   1. verifier `VITE_API_BASE_URL` sur Vercel
