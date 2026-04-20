@@ -1,37 +1,23 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import WikiHeader from "@/components/WikiHeader";
 import WikiSidebar from "@/components/WikiSidebar";
 import WikiInfobox from "@/components/WikiInfobox";
-import WikiArticle from "@/components/WikiArticle";
 import { api, getApiErrorMessage } from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 
 const FALLBACK_HERO_IMG =
   "https://mgx-backend-cdn.metadl.com/generate/images/1012844/2026-03-09/7114fcac-9461-414c-943b-cc249383ec50.png";
 
-function escapeHtml(input: string) {
-  return input
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function toParagraphs(text: string) {
-  return text
-    .split(/\n{2,}/)
-    .map((paragraph) => `<p>${escapeHtml(paragraph).replaceAll("\n", "<br/>")}</p>`)
-    .join("");
-}
-
 export default function ArticlePage() {
   const { slug = "" } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [tocOpen, setTocOpen] = useState(true);
 
   const { data: article, isLoading, isError } = useQuery({
     queryKey: ["article", slug],
@@ -58,18 +44,16 @@ export default function ArticlePage() {
     }
   });
 
-  const articleSections = useMemo(() => {
-    if (!article) {
-      return [];
-    }
-
-    return [
-      {
-        id: "contenu",
-        title: "Contenu",
-        content: toParagraphs(article.content)
-      }
-    ];
+  const headings = useMemo(() => {
+    if (!article) return [];
+    const lines = article.content.split("\n");
+    return lines
+      .filter((line) => line.startsWith("##") || line.startsWith("###"))
+      .map((line) => ({
+        id: line.replace(/^#+\s/, "").toLowerCase().replace(/\s+/g, "-"),
+        level: line.startsWith("###") ? 3 : 2,
+        title: line.replace(/^#+\s/, "")
+      }));
   }, [article]);
 
   if (isLoading) {
@@ -130,18 +114,97 @@ export default function ArticlePage() {
               <WikiInfobox
                 title={article.title}
                 subtitle={article.summary || "Article Bulbipédia"}
-                imageUrl={FALLBACK_HERO_IMG}
+                imageUrl={article.heroImageUrl || FALLBACK_HERO_IMG}
                 imageAlt={article.title}
                 stats={infoboxStats}
                 footer="Données issues de l'API Bulbipédia"
               />
 
-              <WikiArticle
-                title={article.title}
-                intro={toParagraphs(article.summary || article.content.slice(0, 220))}
-                sections={articleSections}
-                categories={[article.author?.username ? `Auteur: ${article.author.username}` : "Communauté"]}
-              />
+              <article className="bg-white rounded-lg border border-[var(--bulbi-border)] p-6 md:p-8">
+                <h1 className="font-serif text-3xl md:text-4xl font-bold text-[var(--bulbi-text)] border-b border-[var(--bulbi-border)] pb-3 mb-4">
+                  {article.title}
+                </h1>
+
+                {/* Table of Contents */}
+                {headings.length > 0 && (
+                  <div className="wiki-toc mb-6 inline-block min-w-[250px]">
+                    <button
+                      onClick={() => setTocOpen(!tocOpen)}
+                      className="flex items-center gap-2 font-semibold text-sm text-[var(--bulbi-text)] mb-2 w-full"
+                    >
+                      {tocOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      Sommaire
+                    </button>
+                    {tocOpen && (
+                      <ol className="list-decimal list-inside space-y-1 text-sm">
+                        {headings.map((heading) => (
+                          <li key={heading.id} className={heading.level === 3 ? "ml-4 text-xs" : ""}>
+                            <button
+                              onClick={() => {
+                                const element = document.getElementById(heading.id);
+                                if (element) element.scrollIntoView({ behavior: "smooth", block: "start" });
+                              }}
+                              className="wiki-link"
+                            >
+                              {heading.title}
+                            </button>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="prose prose-sm max-w-none text-[var(--bulbi-text)]">
+                  <ReactMarkdown
+                    components={{
+                      h2: ({ node, ...props }) => (
+                        <h2
+                          id={props.children?.[0]?.toString().toLowerCase().replace(/\s+/g, "-")}
+                          className="font-serif text-xl font-bold border-b border-[var(--bulbi-border)] pb-1 mt-3 mb-2"
+                          {...props}
+                        />
+                      ),
+                      h3: ({ node, ...props }) => (
+                        <h3
+                          id={props.children?.[0]?.toString().toLowerCase().replace(/\s+/g, "-")}
+                          className="font-serif text-lg font-bold mt-2 mb-1"
+                          {...props}
+                        />
+                      ),
+                      strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                      em: ({ node, ...props }) => <em className="italic" {...props} />,
+                      p: ({ node, ...props }) => <p className="leading-relaxed mb-2" {...props} />,
+                      a: ({ node, ...props }) => (
+                        <a className="text-[var(--bulbi-link)] hover:underline" {...props} />
+                      ),
+                      img: ({ node, ...props }) => (
+                        <div className="my-3">
+                          <img {...props} className="w-full rounded-lg border border-[var(--bulbi-border)]" />
+                        </div>
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <ul className="list-disc list-inside space-y-1 mb-2" {...props} />
+                      ),
+                      ol: ({ node, ...props }) => (
+                        <ol className="list-decimal list-inside space-y-1 mb-2" {...props} />
+                      )
+                    }}
+                  >
+                    {article.content}
+                  </ReactMarkdown>
+                </div>
+
+                {/* Categories */}
+                <div className="mt-6 pt-4 border-t border-[var(--bulbi-border)] flex flex-wrap gap-2">
+                  {article.author?.username && (
+                    <span className="inline-block text-xs bg-[var(--bulbi-bg)] text-[var(--bulbi-text-secondary)] rounded-full px-2.5 py-1">
+                      Auteur: {article.author.username}
+                    </span>
+                  )}
+                </div>
+              </article>
             </div>
 
             <section className="mt-4 bg-white border border-[var(--bulbi-border)] rounded-lg p-4">

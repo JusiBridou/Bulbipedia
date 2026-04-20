@@ -18,6 +18,7 @@ export type Article = {
 	title: string;
 	summary: string | null;
 	content: string;
+	heroImageUrl?: string | null;
 	published: boolean;
 	publishedAt: string | null;
 	createdAt: string;
@@ -143,11 +144,11 @@ export const api = {
 			const { data } = await http.get<{ article: Article }>(`/api/articles/${slug}`);
 			return data.article;
 		},
-		async create(payload: { title: string; summary?: string; content: string; published?: boolean }) {
+		async create(payload: { title: string; summary?: string; content: string; heroImageUrl?: string; published?: boolean }) {
 			const { data } = await http.post<{ article: Article }>("/api/articles", payload);
 			return data.article;
 		},
-		async update(slug: string, payload: Partial<Pick<Article, "title" | "summary" | "content" | "published">>) {
+		async update(slug: string, payload: Partial<Pick<Article, "title" | "summary" | "content" | "heroImageUrl" | "published">>) {
 			const { data } = await http.patch<{ article: Article }>(`/api/articles/${slug}`, payload);
 			return data.article;
 		},

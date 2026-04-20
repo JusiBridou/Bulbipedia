@@ -157,6 +157,7 @@ articleRouter.post(
         title: input.title,
         summary: input.summary,
         content: input.content,
+        heroImageUrl: input.heroImageUrl,
         published: input.published ?? false,
         publishedAt: input.published ? new Date() : null,
         authorId: req.user!.id
@@ -196,6 +197,7 @@ articleRouter.patch(
         title: nextTitle,
         summary: input.summary === undefined ? existing.summary : input.summary,
         content: input.content ?? existing.content,
+        heroImageUrl: input.heroImageUrl === undefined ? existing.heroImageUrl : input.heroImageUrl,
         published: nextPublished,
         publishedAt: nextPublished ? existing.publishedAt ?? new Date() : null
       }

@@ -26,18 +26,19 @@ model User {
 }
 
 model Article {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  title       String
-  summary     String?
-  content     String
-  published   Boolean   @default(false)
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  ratings     Rating[]
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  summary       String?
+  content       String
+  heroImageUrl  String?
+  published     Boolean   @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  authorId      String
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  ratings       Rating[]
 
   @@index([published, createdAt])
   @@index([authorId])
