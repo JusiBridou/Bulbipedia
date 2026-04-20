@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { api, getApiErrorMessage } from "@/lib/api";
 
@@ -42,6 +42,7 @@ export default function NewArticlePage() {
   return (
     <div className="min-h-screen bg-[var(--bulbi-bg)] p-4 md:p-8">
       <div className="max-w-3xl mx-auto bg-white border border-[var(--bulbi-border)] rounded-lg p-6">
+        <Link to="/" className="inline-flex items-center text-sm wiki-link mb-3">← Retour à l'accueil</Link>
         <h1 className="font-serif text-3xl font-bold text-[var(--bulbi-text)] mb-2">Nouvel article</h1>
         <p className="text-sm text-[var(--bulbi-text-secondary)] mb-5">Publie un article dans Bulbipédia.</p>
 

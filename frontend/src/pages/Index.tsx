@@ -1,5 +1,5 @@
-import SearchPage from './SearchPage';
+import HomePage from './HomePage';
 
-const Index = () => <SearchPage />;
+const Index = () => <HomePage />;
 
 export default Index;

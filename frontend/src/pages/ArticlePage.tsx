@@ -120,6 +120,12 @@ export default function ArticlePage() {
               <span className="text-[var(--bulbi-text)]">{article.title}</span>
             </nav>
 
+            {article.author?.username && (
+              <p className="text-sm text-[var(--bulbi-text-secondary)] mb-4">
+                Auteur: <Link className="wiki-link" to={`/profil/${article.author.username}`}>@{article.author.username}</Link>
+              </p>
+            )}
+
             <div className="relative">
               <WikiInfobox
                 title={article.title}

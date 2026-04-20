@@ -25,9 +25,31 @@ export type Article = {
 	author?: {
 		id: string;
 		username: string;
+		avatarUrl?: string | null;
 	};
 	ratingCount?: number;
 	ratingAverage?: number;
+};
+
+export type PublicProfile = {
+	id: string;
+	username: string;
+	avatarUrl?: string | null;
+	createdAt: string;
+	articleCount: number;
+	ratingCount: number;
+	ratingAverage: number;
+};
+
+export type PublicProfileArticle = {
+	id: string;
+	slug: string;
+	title: string;
+	summary: string | null;
+	publishedAt: string | null;
+	updatedAt: string;
+	ratingCount: number;
+	ratingAverage: number;
 };
 
 export type AuthResponse = {
@@ -155,6 +177,18 @@ export const api = {
 		},
 		async deleteArticle(articleId: string) {
 			await http.delete(`/api/admin/articles/${articleId}`);
+		}
+	},
+	users: {
+		async profile(username: string) {
+			const { data } = await http.get<{ profile: PublicProfile; articles: PublicProfileArticle[] }>(
+				`/api/users/${encodeURIComponent(username)}`
+			);
+			return data;
+		},
+		async updateMe(payload: { username?: string; avatarUrl?: string | null }) {
+			const { data } = await http.patch<{ user: User }>("/api/users/me", payload);
+			return data.user;
 		}
 	}
 };

@@ -13,6 +13,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import NewArticlePage from './pages/NewArticlePage';
 import AdminPage from './pages/AdminPage';
+import ProfilePage from './pages/ProfilePage';
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,8 @@ const App = () => (
           <Route path="/connexion" element={<LoginPage />} />
           <Route path="/inscription" element={<RegisterPage />} />
           <Route path="/nouvel-article" element={<NewArticlePage />} />
+          <Route path="/profil" element={<ProfilePage />} />
+          <Route path="/profil/:username" element={<ProfilePage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

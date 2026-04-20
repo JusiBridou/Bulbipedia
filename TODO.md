@@ -31,8 +31,23 @@
 ### Phase 4 - Mise en ligne publique
 - [x] Documenter l'architecture de deploiement choisie (frontend/backend/db).
 - [x] Ecrire un runbook de deploiement (variables, commandes, checks).
-- [ ] Executer le deploiement v1 (frontend + backend + DB managée).
+- [x] Executer le deploiement v1 (frontend + backend + DB managée).
 - [ ] Configurer checks de securite et smoke tests post-deploiement.
+
+### Phase 5 - Evolution produit post-deploiement
+- [x] Ajouter un bouton "Retour a l'accueil" sur les pages `Connexion`, `Inscription` et `Publier un article`.
+- [x] Concevoir une vraie page d'accueil (contenu editorial + points d'entree), en remplacement de l'ecran de recherche vide.
+- [x] Ajouter une page `Profil` accessible depuis le nom d'utilisateur dans le header.
+- [x] Permettre l'edition des informations de profil (ex: avatar, username, bio si ajoutee).
+- [x] Rendre les profils consultables publiquement pour voir les articles ecrits par chaque utilisateur.
+- [x] Afficher, sur chaque profil, la liste des articles publies par l'utilisateur.
+- [x] Calculer et afficher une note utilisateur = moyenne des notes des articles qu'il a publies.
+- [ ] Ameliorer l'interface d'ecriture d'article avec un editeur riche:
+  - [ ] insertion d'images,
+  - [ ] gestion/modification du sommaire,
+  - [ ] choix de police,
+  - [ ] texte en gras/italique,
+  - [ ] insertion de liens.
 
 ## 0) Recreer un TODO propre
 - [x] Creer ce fichier `TODO.md` comme source de verite de reprise.
@@ -82,13 +97,14 @@
   - [x] `corepack pnpm --dir .\frontend run build`
 
 ## Reste a faire priorise
-1. [x] Definir une strategie de deploiement v1 (hors Docker) documentee dans `docs/operations`.
-2. [x] Etendre la suite de tests API (auth + articles + ratings).
-3. [ ] Ajouter des checks CI automatiques (lint/build/test:api/audit) pour eviter les regressions.
-4. [ ] Ajouter des tests d'integration API avec base de donnees de test (cas metier succes).
+1. [ ] Ameliorer l'editeur de publication (images, sommaire, mise en forme, liens).
+2. [ ] Ajouter des checks CI automatiques (lint/build/test:api/audit) pour eviter les regressions.
+3. [ ] Ajouter des tests d'integration API avec base de donnees de test (cas metier succes).
 
 ## Journal de reprise
 - 2026-04-19: nettoyage initial termine (Docker retire, documentation restructuree).
 - 2026-04-19: validations techniques executees avec succes (backend build, frontend lint/build).
 - 2026-04-19: remediation securite backend terminee (audit passe a 0 vuln).
 - 2026-04-19: extension tests API livree (auth/articles/ratings + admin ACL, 10 tests OK).
+- 2026-04-20: deploiement v1 marque comme execute et ajout d'une phase post-deploiement centree UX/produit (home, profil, editeur riche, retours vers accueil).
+- 2026-04-20: debut implementation phase 5 livre (vraie home, page profil publique + edition, score auteur, liens profil et retours vers accueil sur auth/publication).

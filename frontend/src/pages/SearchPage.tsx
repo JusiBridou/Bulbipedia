@@ -23,6 +23,7 @@ export default function SearchPage() {
         title: article.title,
         excerpt: article.summary || article.content.slice(0, 180),
         categories: [article.author?.username ? `Auteur: ${article.author.username}` : "Communauté"],
+        authorUsername: article.author?.username,
         slug: article.slug,
         ratingAverage: article.ratingAverage ?? 0,
         ratingCount: article.ratingCount ?? 0,
@@ -160,6 +161,15 @@ export default function SearchPage() {
                             </span>
                           ))}
                         </div>
+                        {result.authorUsername && (
+                          <Link
+                            to={`/profil/${result.authorUsername}`}
+                            onClick={(event) => event.stopPropagation()}
+                            className="text-xs wiki-link shrink-0"
+                          >
+                            Voir le profil auteur
+                          </Link>
+                        )}
                         <span className="text-xs text-[var(--bulbi-text-secondary)] shrink-0">
                           Modifié le {result.lastModified} · ★ {result.ratingAverage.toFixed(1)} ({result.ratingCount})
                         </span>

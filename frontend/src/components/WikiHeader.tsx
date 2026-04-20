@@ -111,7 +111,12 @@ export default function WikiHeader() {
                     {me.username.slice(0, 1).toUpperCase()}
                   </span>
                 )}
-                <span className="px-3 py-1.5 text-white/90 text-sm">@{me.username}</span>
+                <Link
+                  to={`/profil/${me.username}`}
+                  className="px-3 py-1.5 text-white/90 text-sm hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                >
+                  @{me.username}
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="px-3 py-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"
@@ -188,7 +193,7 @@ export default function WikiHeader() {
 
           {me ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 px-3 py-1">
+              <Link to={`/profil/${me.username}`} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-3 py-1 rounded-md hover:bg-white/10">
                 {me.avatarUrl ? (
                   <img
                     src={me.avatarUrl}
@@ -201,7 +206,7 @@ export default function WikiHeader() {
                   </span>
                 )}
                 <span className="text-white text-sm">@{me.username}</span>
-              </div>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-3 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-colors text-sm"

@@ -34,6 +34,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[var(--bulbi-bg)] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white border border-[var(--bulbi-border)] rounded-lg p-6">
+        <Link to="/" className="inline-flex items-center text-sm wiki-link mb-3">← Retour à l'accueil</Link>
         <h1 className="text-2xl font-serif font-bold text-[var(--bulbi-text)] mb-1">Inscription</h1>
         <p className="text-sm text-[var(--bulbi-text-secondary)] mb-5">Crée ton compte Bulbipédia.</p>
 
