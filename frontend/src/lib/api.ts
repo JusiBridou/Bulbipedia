@@ -62,11 +62,12 @@ export type AdminArticle = {
 };
 
 const http = axios.create({
-	baseURL: getAPIBaseURL(),
 	timeout: 10000
 });
 
 http.interceptors.request.use((config) => {
+ config.baseURL = getAPIBaseURL();
+
 	const token = localStorage.getItem(TOKEN_KEY);
 	if (token) {
 		config.headers.Authorization = `Bearer ${token}`;
