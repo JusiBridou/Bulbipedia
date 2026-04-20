@@ -1,20 +1,35 @@
-import { useState, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import WikiHeader from "@/components/WikiHeader";
 import WikiSidebar from "@/components/WikiSidebar";
 import { Search, Filter, FileText } from "lucide-react";
 import { api } from "@/lib/api";
 
+function parseSearchQuery(rawQuery: string) {
+  const trimmed = rawQuery.trim();
+  const authorMatch = trimmed.match(/(?:^|\s)@([a-zA-Z0-9_\-.]+)/);
+  const author = authorMatch?.[1] || undefined;
+  const q = trimmed.replace(/(?:^|\s)@[a-zA-Z0-9_\-.]+/g, " ").trim() || undefined;
+
+  return { q, author };
+}
+
 export default function SearchPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const [localQuery, setLocalQuery] = useState(query);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
+
+  useEffect(() => {
+    setLocalQuery(query);
+  }, [query]);
 
   const { data: allArticles = [], isLoading } = useQuery({
-    queryKey: ["articles", query],
-    queryFn: () => api.articles.search({ q: query || undefined })
+    queryKey: ["articles", parsedSearch.q, parsedSearch.author],
+    queryFn: () => api.articles.search({ q: parsedSearch.q, author: parsedSearch.author })
   });
 
   const results = useMemo(() => {
@@ -66,9 +81,12 @@ export default function SearchPage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (localQuery.trim()) {
-                    window.location.href = `/recherche?q=${encodeURIComponent(localQuery.trim())}`;
+                  const next = localQuery.trim();
+                  if (!next) {
+                    navigate("/recherche", { replace: false });
+                    return;
                   }
+                  navigate(`/recherche?q=${encodeURIComponent(next)}`);
                 }}
                 className="flex gap-2"
               >
@@ -89,6 +107,10 @@ export default function SearchPage() {
                   Rechercher
                 </button>
               </form>
+
+              <p className="text-xs text-[var(--bulbi-text-secondary)] mt-2">
+                Astuce: utilise <strong>@utilisateur</strong> pour filtrer les articles d'un auteur (ex: <strong>@julia pokémon</strong>).
+              </p>
 
               {query && (
                 <p className="text-sm text-[var(--bulbi-text-secondary)] mt-3">
@@ -136,21 +158,20 @@ export default function SearchPage() {
               )}
 
               {results.map((result) => (
-                <Link
-                  key={result.title}
-                  to={`/article/${result.slug}`}
-                  className="block bg-white rounded-lg border border-[var(--bulbi-border)] p-4 hover:border-[var(--bulbi-primary)] hover:shadow-sm transition-all group"
+                <article
+                  key={result.slug}
+                  className="bg-white rounded-lg border border-[var(--bulbi-border)] p-4 hover:border-[var(--bulbi-primary)] hover:shadow-sm transition-all"
                 >
                   <div className="flex items-start gap-3">
                     <FileText className="w-5 h-5 text-[var(--bulbi-primary)] shrink-0 mt-0.5" />
                     <div className="min-w-0">
-                      <h3 className="text-base font-semibold text-[var(--bulbi-link)] group-hover:underline">
-                        {result.title}
+                      <h3 className="text-base font-semibold text-[var(--bulbi-link)] hover:underline">
+                        <Link to={`/article/${result.slug}`}>{result.title}</Link>
                       </h3>
                       <p className="text-sm text-[var(--bulbi-text)] mt-1 line-clamp-2 leading-relaxed">
                         {result.excerpt}
                       </p>
-                      <div className="flex items-center gap-3 mt-2">
+                      <div className="flex items-center gap-3 mt-2 flex-wrap">
                         <div className="flex gap-1.5 flex-wrap">
                           {result.categories.map((cat) => (
                             <span
@@ -162,11 +183,7 @@ export default function SearchPage() {
                           ))}
                         </div>
                         {result.authorUsername && (
-                          <Link
-                            to={`/profil/${result.authorUsername}`}
-                            onClick={(event) => event.stopPropagation()}
-                            className="text-xs wiki-link shrink-0"
-                          >
+                          <Link to={`/profil/${result.authorUsername}`} className="text-xs wiki-link shrink-0">
                             Voir le profil auteur
                           </Link>
                         )}
@@ -176,7 +193,7 @@ export default function SearchPage() {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </article>
               ))}
 
               {results.length === 0 && (
