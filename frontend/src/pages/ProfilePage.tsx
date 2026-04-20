@@ -51,7 +51,7 @@ export default function ProfilePage() {
         avatarUrl: nextAvatarUrl.trim() ? nextAvatarUrl.trim() : null
       }),
     onSuccess: async (updatedUser) => {
-      toast.success("Profil mis a jour");
+      toast.success("Profil mis à jour");
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
 
@@ -72,14 +72,14 @@ export default function ProfilePage() {
           <section className="bg-white border border-[var(--bulbi-border)] rounded-xl p-6">
             <h1 className="font-serif text-2xl font-bold text-[var(--bulbi-text)]">Profil</h1>
             <p className="text-[var(--bulbi-text-secondary)] mt-2">
-              Connecte-toi pour acceder a ton profil.
+              Connecte-toi pour accéder à ton profil.
             </p>
             <div className="mt-4 flex gap-3">
               <Link to="/connexion" className="px-4 py-2 rounded-lg bg-[var(--bulbi-primary)] text-white text-sm font-medium">
                 Se connecter
               </Link>
               <Link to="/" className="px-4 py-2 rounded-lg border border-[var(--bulbi-border)] text-sm">
-                Retour a l'accueil
+                Retour à l'accueil
               </Link>
             </div>
           </section>
@@ -105,7 +105,7 @@ export default function ProfilePage() {
           <section className="bg-white border border-[var(--bulbi-border)] rounded-xl p-6">
             <h1 className="font-serif text-2xl font-bold text-[var(--bulbi-text)]">Profil introuvable</h1>
             <p className="text-[var(--bulbi-text-secondary)] mt-2">{getApiErrorMessage(profileQuery.error)}</p>
-            <Link to="/" className="wiki-link inline-block mt-4">Retour a l'accueil</Link>
+            <Link to="/" className="wiki-link inline-block mt-4">Retour à l'accueil</Link>
           </section>
         </main>
       </div>
@@ -117,7 +117,7 @@ export default function ProfilePage() {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!nextUsername.trim()) {
-      toast.error("Le username ne peut pas etre vide");
+      toast.error("Le username ne peut pas être vide");
       return;
     }
 
@@ -153,7 +153,7 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-5">
             <div className="rounded-lg border border-[var(--bulbi-border)] bg-[var(--bulbi-bg)]/60 p-3">
-              <p className="text-xs text-[var(--bulbi-text-secondary)]">Articles publies</p>
+              <p className="text-xs text-[var(--bulbi-text-secondary)]">Articles publiés</p>
               <p className="text-xl font-semibold text-[var(--bulbi-text)]">{profile.articleCount}</p>
             </div>
             <div className="rounded-lg border border-[var(--bulbi-border)] bg-[var(--bulbi-bg)]/60 p-3">
@@ -161,7 +161,7 @@ export default function ProfilePage() {
               <p className="text-xl font-semibold text-[var(--bulbi-text)]">★ {profile.ratingAverage.toFixed(2)}</p>
             </div>
             <div className="rounded-lg border border-[var(--bulbi-border)] bg-[var(--bulbi-bg)]/60 p-3 col-span-2 md:col-span-1">
-              <p className="text-xs text-[var(--bulbi-text-secondary)]">Nombre total de votes recus</p>
+              <p className="text-xs text-[var(--bulbi-text-secondary)]">Nombre total de votes reçus</p>
               <p className="text-xl font-semibold text-[var(--bulbi-text)]">{profile.ratingCount}</p>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                 disabled={updateMutation.isPending}
                 className="px-4 py-2 rounded-lg bg-[var(--bulbi-primary)] text-white text-sm font-medium disabled:opacity-70"
               >
-                {updateMutation.isPending ? "Mise a jour..." : "Enregistrer"}
+                {updateMutation.isPending ? "Mise à jour..." : "Enregistrer"}
               </button>
             </form>
           </section>
@@ -210,7 +210,7 @@ export default function ProfilePage() {
           <h2 className="font-serif text-2xl text-[var(--bulbi-text)]">Articles de @{profile.username}</h2>
 
           {articles.length === 0 ? (
-            <p className="text-sm text-[var(--bulbi-text-secondary)] mt-3">Aucun article publie pour le moment.</p>
+            <p className="text-sm text-[var(--bulbi-text-secondary)] mt-3">Aucun article publié pour le moment.</p>
           ) : (
             <div className="mt-4 space-y-3">
               {articles.map((article) => (
@@ -224,10 +224,10 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <p className="text-sm text-[var(--bulbi-text-secondary)] mt-1 line-clamp-2">
-                    {article.summary || "Sans resume"}
+                    {article.summary || "Sans résumé"}
                   </p>
                   <p className="text-xs text-[var(--bulbi-text-secondary)] mt-2">
-                    Mis a jour le {new Date(article.updatedAt).toLocaleDateString("fr-FR")}
+                    Mis à jour le {new Date(article.updatedAt).toLocaleDateString("fr-FR")}
                   </p>
                 </article>
               ))}

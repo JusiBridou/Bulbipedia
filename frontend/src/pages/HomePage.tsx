@@ -26,7 +26,7 @@ export default function HomePage() {
               Bienvenue sur Bulbipedia
             </h1>
             <p className="mt-3 text-white/90 text-sm md:text-base max-w-xl">
-              Une encyclopedie collaborative ou la communaute publie, note et ameliore des articles.
+              Une encyclopédie collaborative où la communauté publie, note et améliore des articles.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -50,7 +50,7 @@ export default function HomePage() {
 
         <section className="bg-white border border-[var(--bulbi-border)] rounded-xl p-5 md:p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
-            <h2 className="font-serif text-2xl text-[var(--bulbi-text)]">Derniers articles publies</h2>
+            <h2 className="font-serif text-2xl text-[var(--bulbi-text)]">Derniers articles publiés</h2>
             <Link to="/recherche" className="wiki-link text-sm inline-flex items-center gap-1">
               Voir tout
               <ArrowRight className="w-4 h-4" />
@@ -61,8 +61,8 @@ export default function HomePage() {
             <p className="text-sm text-[var(--bulbi-text-secondary)]">Chargement des articles...</p>
           ) : featured.length === 0 ? (
             <div className="rounded-lg border border-dashed border-[var(--bulbi-border)] p-6 text-center">
-              <p className="text-[var(--bulbi-text)] font-medium">Aucun article publie pour le moment.</p>
-              <p className="text-sm text-[var(--bulbi-text-secondary)] mt-1">Sois le premier a contribuer.</p>
+              <p className="text-[var(--bulbi-text)] font-medium">Aucun article publié pour le moment.</p>
+              <p className="text-sm text-[var(--bulbi-text-secondary)] mt-1">Sois le premier à contribuer.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
