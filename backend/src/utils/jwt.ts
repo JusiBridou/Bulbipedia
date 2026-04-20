@@ -10,8 +10,7 @@ export type JwtPayload = {
 
 export function signAccessToken(payload: JwtPayload): string {
   const options: jwt.SignOptions = {
-    expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
-    subject: payload.sub
+    expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"]
   };
 
   return jwt.sign(payload, env.JWT_SECRET, {
