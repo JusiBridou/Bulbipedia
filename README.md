@@ -35,6 +35,15 @@ npm --prefix backend run dev
 
 Backend: `http://localhost:4000`
 
+Note importante:
+- Si tu restaures une base plus ancienne, applique aussi les migrations Prisma les plus recentes avant de tester les pages profil et articles.
+- Le dernier correctif rend les lectures d'articles plus tolerantes, mais une base a jour reste la reference.
+
+Medias:
+- les avatars, images hero et images inline sont televerses depuis le frontend;
+- le backend stocke ces fichiers dans `backend/uploads` et les sert sous `/uploads/*`;
+- en production, ce dossier doit etre persistant sinon les images seront perdues au redeploiement.
+
 ## Documentation
 
 - Index docs: `docs/README.md`

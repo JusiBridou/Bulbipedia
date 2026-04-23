@@ -6,7 +6,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import WikiHeader from "@/components/WikiHeader";
 import WikiSidebar from "@/components/WikiSidebar";
 import WikiInfobox from "@/components/WikiInfobox";
-import { api, getApiErrorMessage } from "@/lib/api";
+import { api, getApiErrorMessage, resolveMediaURL } from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 
 const FALLBACK_HERO_IMG =
@@ -114,7 +114,7 @@ export default function ArticlePage() {
               <WikiInfobox
                 title={article.title}
                 subtitle={article.summary || "Article Bulbipédia"}
-                imageUrl={article.heroImageUrl || FALLBACK_HERO_IMG}
+                imageUrl={resolveMediaURL(article.heroImageUrl) || FALLBACK_HERO_IMG}
                 imageAlt={article.title}
                 stats={infoboxStats}
                 footer="Données issues de l'API Bulbipédia"

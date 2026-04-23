@@ -12,7 +12,10 @@ ratingRouter.get(
   asyncHandler(async (req, res) => {
     const article = await prisma.article.findUnique({
       where: { slug: req.params.slug },
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        published: true,
         ratings: {
           select: {
             userId: true,
@@ -53,7 +56,14 @@ ratingRouter.post(
   asyncHandler(async (req, res) => {
     const input = rateArticleSchema.parse(req.body);
 
-    const article = await prisma.article.findUnique({ where: { slug: req.params.slug } });
+    const article = await prisma.article.findUnique({
+      where: { slug: req.params.slug },
+      select: {
+        id: true,
+        slug: true,
+        published: true
+      }
+    });
     if (!article || !article.published) {
       return sendError(res, 404, "Article not found");
     }

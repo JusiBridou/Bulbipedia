@@ -17,7 +17,14 @@ Le schema de donnees est defini dans `backend/prisma/schema.prisma`.
 	- `username` (unique)
 	- `passwordHash`
 	- `role` (`USER` ou `ADMIN`)
-	- `avatarUrl` (optionnel, URL photo de profil)
+	- `avatarUrl` (optionnel, chemin ou URL image de profil)
+- Article:
+	- `slug` (unique)
+	- `title`
+	- `summary` (optionnel)
+	- `content`
+	- `heroImageUrl` (optionnel, chemin ou URL image d'en-tete)
+	- `published` / `publishedAt`
 
 ## Relations metier
 
@@ -36,5 +43,7 @@ Le schema de donnees est defini dans `backend/prisma/schema.prisma`.
 ## Impacts lors des evolutions
 
 - Toute evolution de schema doit passer par migration Prisma.
+- Si une migration ajoute un champ optionnel visible dans l'API, verifier aussi les routes qui lisent les articles, le profil auteur et l'administration.
 - Les validators backend doivent etre synchronises avec les nouvelles contraintes.
 - Les pages frontend consommant les champs modifies doivent etre mises a jour.
+- Les champs medias peuvent pointer vers des fichiers backend (`/uploads/*`) ou des URLs externes legacy.

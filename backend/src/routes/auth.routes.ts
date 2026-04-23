@@ -6,21 +6,28 @@ import { requireAuth } from "../middleware/auth";
 import { signAccessToken } from "../utils/jwt";
 import { sendError } from "../utils/http";
 import { loginSchema, registerSchema } from "../validators/auth";
+import { deleteStoredImage, imageUpload, saveUploadedImage } from "../utils/uploads";
 
 const authRouter = Router();
 
 authRouter.post(
   "/register",
+  imageUpload.single("avatarImage"),
   asyncHandler(async (req, res) => {
     const input = registerSchema.parse(req.body);
     const passwordHash = await bcrypt.hash(input.password, 10);
+
+    let uploadedAvatarPath: string | null = null;
+    const avatarUrl = req.file
+      ? ((uploadedAvatarPath = await saveUploadedImage(req.file, "avatar")), uploadedAvatarPath)
+      : input.avatarUrl;
 
     try {
       const user = await prisma.user.create({
         data: {
           email: input.email.toLowerCase(),
           username: input.username,
-          avatarUrl: input.avatarUrl,
+          avatarUrl,
           passwordHash
         }
       });
@@ -43,6 +50,10 @@ authRouter.post(
         }
       });
     } catch (error) {
+      if (uploadedAvatarPath) {
+        await deleteStoredImage(uploadedAvatarPath);
+      }
+
       if (
         typeof error === "object" &&
         error !== null &&

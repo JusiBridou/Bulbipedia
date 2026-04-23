@@ -4,21 +4,41 @@ import { asyncHandler } from "../middleware/async-handler";
 import { requireAuth } from "../middleware/auth";
 import { sendError } from "../utils/http";
 import { updateMeSchema } from "../validators/user";
+import { deleteStoredImage, imageUpload, saveUploadedImage } from "../utils/uploads";
 
 const userRouter = Router();
 
 userRouter.patch(
   "/me",
   requireAuth,
+  imageUpload.single("avatarImage"),
   asyncHandler(async (req, res) => {
     const input = updateMeSchema.parse(req.body);
+    let uploadedAvatarPath: string | null = null;
+
+    if (!req.file && input.username === undefined && input.avatarUrl === undefined) {
+      return sendError(res, 400, "At least one field must be provided");
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: { avatarUrl: true }
+    });
+
+    const previousAvatarUrl = existingUser?.avatarUrl ?? null;
+
+    const nextAvatarUrl = req.file
+      ? ((uploadedAvatarPath = await saveUploadedImage(req.file, "avatar")), uploadedAvatarPath)
+      : input.avatarUrl !== undefined
+        ? input.avatarUrl
+        : existingUser?.avatarUrl ?? null;
 
     try {
       const updatedUser = await prisma.user.update({
         where: { id: req.user!.id },
         data: {
           ...(input.username !== undefined ? { username: input.username } : {}),
-          ...(input.avatarUrl !== undefined ? { avatarUrl: input.avatarUrl } : {})
+          ...(req.file || input.avatarUrl !== undefined ? { avatarUrl: nextAvatarUrl } : {})
         },
         select: {
           id: true,
@@ -30,8 +50,16 @@ userRouter.patch(
         }
       });
 
+      if ((req.file || input.avatarUrl !== undefined) && previousAvatarUrl && previousAvatarUrl !== nextAvatarUrl) {
+        await deleteStoredImage(previousAvatarUrl);
+      }
+
       return res.json({ user: updatedUser });
     } catch (error) {
+      if (uploadedAvatarPath) {
+        await deleteStoredImage(uploadedAvatarPath);
+      }
+
       if (
         typeof error === "object" &&
         error !== null &&
@@ -64,7 +92,13 @@ userRouter.get(
         articles: {
           where: { published: true },
           orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-          include: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            summary: true,
+            publishedAt: true,
+            updatedAt: true,
             _count: { select: { ratings: true } },
             ratings: { select: { value: true } }
           }

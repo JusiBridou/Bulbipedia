@@ -22,6 +22,10 @@ npm --prefix backend run dev
 
 Backend par defaut: `http://localhost:4000`.
 
+Si tu reviens d'une base plus ancienne ou d'une sauvegarde, rejoue toutes les migrations Prisma avant de valider le profil et les articles, sinon tu peux voir un login fonctionnel mais des pages article/profil en echec.
+
+Les fichiers images televerses en local sont stockes dans `backend/uploads` et accessibles via `http://localhost:4000/uploads/*`.
+
 ## Setup frontend
 
 ```powershell

@@ -38,6 +38,8 @@ corepack pnpm --dir .\frontend run build
 - Build frontend OK.
 - App frontend charge sans erreur console bloquante.
 - Backend repond sur `/api/health`.
+- Un token valide permet encore de charger `/api/auth/me`, `/api/users/:username` et `/api/articles` apres un push.
+- Les parcours upload avatar, hero et image inline fonctionnent (API + rendu frontend).
 
 ## Politique upgrades backend
 

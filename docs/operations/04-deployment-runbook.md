@@ -105,6 +105,19 @@ Apres deploy, verifier le health check:
 2. ouvrir `https://TON_BACKEND_URL/api/health`
 3. reponse attendue: statut OK (JSON)
 
+Puis verifier aussi les flux qui dependaient du schema Article:
+
+1. ouvrir un profil utilisateur
+2. ouvrir la liste des articles publies
+3. publier un nouvel article avec et sans image d'en-tete
+4. uploader un avatar et une image inline depuis l'editeur
+
+Si le login marche mais que ces pages echouent, le premier reflexe est de verifier les migrations Prisma du service backend.
+
+Point de vigilance media:
+- si tu utilises le stockage local, monte `backend/uploads` sur un volume persistant;
+- sinon deplace les medias vers un stockage objet avant de monter en charge.
+
 ## 6) Etape D - Deployer le frontend sur Vercel
 
 1. Aller sur Vercel

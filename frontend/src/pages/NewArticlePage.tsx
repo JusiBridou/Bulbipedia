@@ -9,7 +9,7 @@ export default function NewArticlePage() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
-  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   const [published, setPublished] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +29,7 @@ export default function NewArticlePage() {
         title,
         summary: summary || undefined,
         content,
-        heroImageUrl: heroImageUrl || undefined,
+        heroImageFile,
         published
       });
 
@@ -56,11 +56,11 @@ export default function NewArticlePage() {
             title={title}
             summary={summary}
             content={content}
-            heroImageUrl={heroImageUrl}
+            heroImageFile={heroImageFile}
             onTitleChange={setTitle}
             onSummaryChange={setSummary}
             onContentChange={setContent}
-            onHeroImageUrlChange={setHeroImageUrl}
+            onHeroImageFileChange={setHeroImageFile}
           />
 
           <div className="flex items-center justify-between gap-3 bg-white rounded-lg border border-[var(--bulbi-border)] p-4">

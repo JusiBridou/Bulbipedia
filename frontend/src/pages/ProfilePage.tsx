@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/sonner";
 import WikiHeader from "@/components/WikiHeader";
-import { api, getApiErrorMessage } from "@/lib/api";
+import { api, getApiErrorMessage, resolveMediaURL } from "@/lib/api";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -11,7 +11,8 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
 
   const [nextUsername, setNextUsername] = useState("");
-  const [nextAvatarUrl, setNextAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState("");
 
   const { data: me } = useQuery({
     queryKey: ["me"],
@@ -36,19 +37,27 @@ export default function ProfilePage() {
   }, [me, resolvedUsername]);
 
   useEffect(() => {
-    if (!isOwnProfile || !profileQuery.data) {
+    if (!profileQuery.data) {
+      setAvatarPreviewUrl("");
       return;
     }
 
+    if (avatarFile) {
+      const objectUrl = URL.createObjectURL(avatarFile);
+      setAvatarPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+
+    setAvatarPreviewUrl(resolveMediaURL(profileQuery.data.profile.avatarUrl));
     setNextUsername(profileQuery.data.profile.username);
-    setNextAvatarUrl(profileQuery.data.profile.avatarUrl ?? "");
-  }, [isOwnProfile, profileQuery.data]);
+    return;
+  }, [avatarFile, profileQuery.data]);
 
   const updateMutation = useMutation({
     mutationFn: () =>
       api.users.updateMe({
         username: nextUsername.trim(),
-        avatarUrl: nextAvatarUrl.trim() ? nextAvatarUrl.trim() : null
+        avatarFile
       }),
     onSuccess: async (updatedUser) => {
       toast.success("Profil mis à jour");
@@ -131,9 +140,9 @@ export default function ProfilePage() {
       <main className="max-w-[960px] mx-auto px-4 py-8 space-y-6">
         <section className="bg-white border border-[var(--bulbi-border)] rounded-xl p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            {profile.avatarUrl ? (
+            {avatarPreviewUrl || profile.avatarUrl ? (
               <img
-                src={profile.avatarUrl}
+                src={avatarPreviewUrl || resolveMediaURL(profile.avatarUrl)}
                 alt={profile.username}
                 className="w-20 h-20 rounded-full object-cover border border-[var(--bulbi-border)]"
               />
@@ -185,14 +194,14 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm text-[var(--bulbi-text-secondary)] mb-1">URL avatar (optionnel)</label>
+                <label className="block text-sm text-[var(--bulbi-text-secondary)] mb-1">Photo de profil (fichier)</label>
                 <input
-                  type="url"
-                  value={nextAvatarUrl}
-                  onChange={(event) => setNextAvatarUrl(event.target.value)}
-                  placeholder="https://..."
-                  className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)]"
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => setAvatarFile(event.target.files?.[0] ?? null)}
+                  className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)] bg-white py-1"
                 />
+                <p className="text-xs text-[var(--bulbi-text-secondary)] mt-1">JPEG, PNG, WEBP, GIF ou AVIF. Maximum 5 MB.</p>
               </div>
 
               <button

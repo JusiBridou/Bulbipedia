@@ -42,8 +42,9 @@
 - [x] Rendre les profils consultables publiquement pour voir les articles ecrits par chaque utilisateur.
 - [x] Afficher, sur chaque profil, la liste des articles publies par l'utilisateur.
 - [x] Calculer et afficher une note utilisateur = moyenne des notes des articles qu'il a publies.
+- [x] Permettre l'upload d'images pour les avatars, les images hero et les images inline dans les articles.
 - [ ] Ameliorer l'interface d'ecriture d'article avec un editeur riche:
-  - [ ] insertion d'images,
+  - [x] insertion d'images,
   - [ ] gestion/modification du sommaire,
   - [ ] choix de police,
   - [ ] texte en gras/italique,
@@ -97,7 +98,7 @@
   - [x] `corepack pnpm --dir .\frontend run build`
 
 ## Reste a faire priorise
-1. [ ] Ameliorer l'editeur de publication (images, sommaire, mise en forme, liens).
+1. [ ] Mettre en place un stockage persistant pour `backend/uploads` en production.
 2. [ ] Ajouter des checks CI automatiques (lint/build/test:api/audit) pour eviter les regressions.
 3. [ ] Ajouter des tests d'integration API avec base de donnees de test (cas metier succes).
 
@@ -108,3 +109,4 @@
 - 2026-04-19: extension tests API livree (auth/articles/ratings + admin ACL, 10 tests OK).
 - 2026-04-20: deploiement v1 marque comme execute et ajout d'une phase post-deploiement centree UX/produit (home, profil, editeur riche, retours vers accueil).
 - 2026-04-20: debut implementation phase 5 livre (vraie home, page profil publique + edition, score auteur, liens profil et retours vers accueil sur auth/publication).
+- 2026-04-22: upload d'images implemente (avatar, hero, inline markdown), avec stockage local `backend/uploads` et docs mises a jour.

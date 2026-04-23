@@ -38,4 +38,5 @@ Thumbs.db
 
 # Sensitive Info
 docs/infos_deployment.md
+backend/uploads/
 

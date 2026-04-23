@@ -5,8 +5,9 @@ API REST Bulbipedia (auth, articles, notes) avec Express + TypeScript + Prisma +
 ## Fonctionnalites
 
 - Inscription/connexion via JWT
-- Profil utilisateur avec `avatarUrl` optionnel
-- CRUD d'articles avec ownership auteur
+- Profil utilisateur avec upload d'avatar
+- CRUD d'articles avec upload d'image hero
+- Upload d'images inline dans le contenu Markdown
 - Notation des articles (1 a 5)
 - Endpoints de sante et stats de notation
 
@@ -41,6 +42,8 @@ npm --prefix backend run prisma:generate
 npm --prefix backend run prisma:migrate -- --name init
 ```
 
+Si la base provient d'un snapshot ancien, rejouer ensuite les migrations ajoutees apres le schema initial, en particulier celle qui introduit `heroImageUrl` sur `Article`.
+
 5. Seed de demo:
 
 ```powershell
@@ -54,6 +57,11 @@ npm --prefix backend run dev
 ```
 
 API disponible sur `http://localhost:4000`.
+
+Stockage medias local:
+- ecriture des images dans `backend/uploads`;
+- exposition des fichiers via `/uploads/*`;
+- ce dossier doit etre persistant en production.
 
 ## Tests API
 
@@ -72,6 +80,7 @@ Couverture actuelle:
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+- `POST /api/uploads/image`
 - `GET /api/articles`
 - `GET /api/articles/mine`
 - `GET /api/articles/:slug`
@@ -100,6 +109,11 @@ Couverture actuelle:
   - Start: `npm run start`
 5. Appliquer les migrations apres deploy depuis le shell Railway du service backend:
   - `npm run prisma:deploy`
+
+Controle rapide apres migration:
+- `GET /api/auth/me` doit repondre correctement avec un token valide.
+- `GET /api/users/:username` doit charger le profil et la liste d'articles.
+- `GET /api/articles` doit lister les articles publies.
 
 Note Railway:
 - Eviter `prisma:deploy` dans le build command. Sur certaines executions, le host prive

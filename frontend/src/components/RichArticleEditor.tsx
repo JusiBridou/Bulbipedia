@@ -1,6 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Bold, Italic, Heading2, Link, Image as ImageIcon, Type } from "lucide-react";
+import { api, getApiErrorMessage } from "@/lib/api";
+import { toast } from "@/components/ui/sonner";
 
 type ToolbarAction = "bold" | "italic" | "h2" | "h3" | "link" | "image" | "bullet";
 
@@ -8,22 +10,24 @@ export function RichArticleEditor({
   title,
   summary,
   content,
-  heroImageUrl,
+  heroImageFile,
   onTitleChange,
   onSummaryChange,
   onContentChange,
-  onHeroImageUrlChange
+  onHeroImageFileChange
 }: {
   title: string;
   summary: string;
   content: string;
-  heroImageUrl: string;
+  heroImageFile: File | null;
   onTitleChange: (title: string) => void;
   onSummaryChange: (summary: string) => void;
   onContentChange: (content: string) => void;
-  onHeroImageUrlChange: (url: string) => void;
+  onHeroImageFileChange: (file: File | null) => void;
 }) {
   const [contentFocused, setContentFocused] = useState(false);
+  const inlineImageInputRef = useRef<HTMLInputElement | null>(null);
+  const [heroPreviewUrl, setHeroPreviewUrl] = useState("");
 
   const extractHeadings = (markdown: string): string[] => {
     const lines = markdown.split("\n");
@@ -34,6 +38,20 @@ export function RichArticleEditor({
   };
 
   const headings = useMemo(() => extractHeadings(content), [content]);
+
+  useEffect(() => {
+    if (!heroImageFile) {
+      setHeroPreviewUrl("");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(heroImageFile);
+    setHeroPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [heroImageFile]);
 
   const insertMarkdown = (before: string, after: string = "") => {
     const textareaRef = document.getElementById("article-content") as HTMLTextAreaElement | null;
@@ -64,15 +82,24 @@ export function RichArticleEditor({
     insertMarkdown(`[`, `](${url})`);
   };
 
-  const insertImage = () => {
-    const url = prompt('URL de l\'image:');
-    if (!url) return;
-    const caption = prompt('Légende (optionnel):') || "";
-    const markdown = `![${caption}](${url})${caption ? ` *${caption}*` : ""}`;
-    const textareaRef = document.getElementById("article-content") as HTMLTextAreaElement | null;
-    if (!textareaRef) return;
-    const start = textareaRef.selectionStart;
-    onContentChange(content.substring(0, start) + "\n" + markdown + "\n" + content.substring(start));
+  const insertImageFromUpload = async (file: File) => {
+    try {
+      const uploadedUrl = await api.media.uploadImage(file);
+      const caption = prompt("Légende (optionnel):") || "";
+      const markdown = `![${caption}](${uploadedUrl})${caption ? ` *${caption}*` : ""}`;
+      const textareaRef = document.getElementById("article-content") as HTMLTextAreaElement | null;
+      if (!textareaRef) return;
+
+      const start = textareaRef.selectionStart;
+      const end = textareaRef.selectionEnd;
+      onContentChange(content.substring(0, start) + "\n" + markdown + "\n" + content.substring(end));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
+    }
+  };
+
+  const handleImageButton = () => {
+    inlineImageInputRef.current?.click();
   };
 
   const toolbarButtons: Array<{
@@ -108,7 +135,7 @@ export function RichArticleEditor({
     {
       icon: <ImageIcon className="w-4 h-4" />,
       label: "Image",
-      action: insertImage
+      action: handleImageButton
     }
   ];
 
@@ -129,14 +156,14 @@ export function RichArticleEditor({
         </div>
 
         <div>
-          <label className="block text-sm text-[var(--bulbi-text-secondary)] mb-1">Image héro (URL)</label>
+          <label className="block text-sm text-[var(--bulbi-text-secondary)] mb-1">Image héro (fichier)</label>
           <input
-            type="url"
-            value={heroImageUrl}
-            onChange={(e) => onHeroImageUrlChange(e.target.value)}
-            placeholder="https://..."
-            className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)]"
+            type="file"
+            accept="image/*"
+            onChange={(e) => onHeroImageFileChange(e.target.files?.[0] ?? null)}
+            className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)] bg-white py-1"
           />
+          <p className="mt-1 text-xs text-[var(--bulbi-text-secondary)]">JPEG, PNG, WEBP, GIF ou AVIF. Maximum 5 MB.</p>
         </div>
 
         <div>
@@ -170,6 +197,22 @@ export function RichArticleEditor({
             ))}
           </div>
 
+          <input
+            ref={inlineImageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0] ?? null;
+              event.target.value = "";
+              if (!file) {
+                return;
+              }
+
+              void insertImageFromUpload(file);
+            }}
+          />
+
           <textarea
             id="article-content"
             required
@@ -189,10 +232,10 @@ export function RichArticleEditor({
         <h2 className="font-serif text-2xl font-bold text-[var(--bulbi-text)]">{title || "Titre de l'article"}</h2>
 
         {/* Infobox Preview */}
-        {heroImageUrl && (
+        {heroPreviewUrl && (
           <div className="rounded-lg border border-[var(--bulbi-border)] overflow-hidden bg-[var(--bulbi-bg)] mb-2">
             <img
-              src={heroImageUrl}
+              src={heroPreviewUrl}
               alt={title}
               className="w-full h-40 object-cover"
               onError={(e) => {
@@ -207,6 +250,12 @@ export function RichArticleEditor({
                 <span className="font-semibold">{title}</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {!heroPreviewUrl && (
+          <div className="rounded-lg border border-dashed border-[var(--bulbi-border)] bg-[var(--bulbi-bg)]/50 p-3 text-xs text-[var(--bulbi-text-secondary)]">
+            Aucune image héro sélectionnée.
           </div>
         )}
 

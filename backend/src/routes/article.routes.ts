@@ -5,8 +5,64 @@ import { requireAuth } from "../middleware/auth";
 import { buildUniqueSlug } from "../utils/slug";
 import { sendError } from "../utils/http";
 import { createArticleSchema, updateArticleSchema } from "../validators/article";
+import { deleteStoredImage, imageUpload, saveUploadedImage } from "../utils/uploads";
 
 const articleRouter = Router();
+
+const articleListSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  content: true,
+  heroImageUrl: true,
+  published: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  author: { select: { id: true, username: true } },
+  _count: { select: { ratings: true } },
+  ratings: { select: { value: true } }
+} as const;
+
+const articleEditSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  content: true,
+  heroImageUrl: true,
+  published: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  author: { select: { id: true, username: true } },
+  _count: { select: { ratings: true } },
+  ratings: { select: { value: true } }
+} as const;
+
+function serializeArticle(article: any) {
+  const avg = article.ratings.length
+    ? article.ratings.reduce((sum: number, rating: { value: number }) => sum + rating.value, 0) /
+      article.ratings.length
+    : 0;
+
+  return {
+    id: article.id,
+    slug: article.slug,
+    title: article.title,
+    summary: article.summary,
+    content: article.content,
+    heroImageUrl: article.heroImageUrl,
+    published: article.published,
+    publishedAt: article.publishedAt,
+    createdAt: article.createdAt,
+    updatedAt: article.updatedAt,
+    author: article.author,
+    ratingCount: article._count.ratings,
+    ratingAverage: Number(avg.toFixed(2))
+  };
+}
 
 articleRouter.get(
   "/",
@@ -29,35 +85,11 @@ articleRouter.get(
         ...(author ? { author: { username: { equals: author, mode: "insensitive" } } } : {})
       },
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      include: {
-        author: { select: { id: true, username: true } },
-        _count: { select: { ratings: true } },
-        ratings: { select: { value: true } }
-      }
+      select: articleListSelect
     });
 
     return res.json({
-      articles: articles.map((article: any) => {
-        const avg = article.ratings.length
-          ? article.ratings.reduce((sum: number, rating: { value: number }) => sum + rating.value, 0) /
-            article.ratings.length
-          : 0;
-
-        return {
-          id: article.id,
-          slug: article.slug,
-          title: article.title,
-          summary: article.summary,
-          content: article.content,
-          published: article.published,
-          publishedAt: article.publishedAt,
-          createdAt: article.createdAt,
-          updatedAt: article.updatedAt,
-          author: article.author,
-          ratingCount: article._count.ratings,
-          ratingAverage: Number(avg.toFixed(2))
-        };
-      })
+      articles: articles.map(serializeArticle)
     });
   })
 );
@@ -69,7 +101,17 @@ articleRouter.get(
     const articles = await prisma.article.findMany({
       where: { authorId: req.user!.id },
       orderBy: { updatedAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        summary: true,
+        content: true,
+        heroImageUrl: true,
+        published: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
         _count: { select: { ratings: true } },
         ratings: { select: { value: true } }
       }
@@ -88,6 +130,7 @@ articleRouter.get(
           title: article.title,
           summary: article.summary,
           content: article.content,
+          heroImageUrl: article.heroImageUrl,
           published: article.published,
           publishedAt: article.publishedAt,
           createdAt: article.createdAt,
@@ -105,11 +148,7 @@ articleRouter.get(
   asyncHandler(async (req, res) => {
     const article = await prisma.article.findUnique({
       where: { slug: req.params.slug },
-      include: {
-        author: { select: { id: true, username: true } },
-        _count: { select: { ratings: true } },
-        ratings: { select: { value: true } }
-      }
+      select: articleListSelect
     });
 
     if (!article) {
@@ -147,37 +186,64 @@ articleRouter.get(
 articleRouter.post(
   "/",
   requireAuth,
+  imageUpload.single("heroImage"),
   asyncHandler(async (req, res) => {
     const input = createArticleSchema.parse(req.body);
     const slug = await buildUniqueSlug(input.title);
+    let uploadedHeroImagePath: string | null = null;
 
-    const article = await prisma.article.create({
-      data: {
-        slug,
-        title: input.title,
-        summary: input.summary,
-        content: input.content,
-        heroImageUrl: input.heroImageUrl,
-        published: input.published ?? false,
-        publishedAt: input.published ? new Date() : null,
-        authorId: req.user!.id
-      },
-      include: {
-        author: { select: { id: true, username: true } }
+    const heroImageUrl = req.file
+      ? ((uploadedHeroImagePath = await saveUploadedImage(req.file, "article")), uploadedHeroImagePath)
+      : input.heroImageUrl;
+
+    try {
+      const article = await prisma.article.create({
+        data: {
+          slug,
+          title: input.title,
+          summary: input.summary,
+          content: input.content,
+          ...(heroImageUrl !== undefined ? { heroImageUrl } : {}),
+          published: input.published ?? false,
+          publishedAt: input.published ? new Date() : null,
+          authorId: req.user!.id
+        },
+        select: articleEditSelect
+      });
+
+      return res.status(201).json({ article: serializeArticle(article) });
+    } catch (error) {
+      if (uploadedHeroImagePath) {
+        await deleteStoredImage(uploadedHeroImagePath);
       }
-    });
 
-    return res.status(201).json({ article });
+      throw error;
+    }
   })
 );
 
 articleRouter.patch(
   "/:slug",
   requireAuth,
+  imageUpload.single("heroImage"),
   asyncHandler(async (req, res) => {
     const input = updateArticleSchema.parse(req.body);
+    let uploadedHeroImagePath: string | null = null;
 
-    const existing = await prisma.article.findUnique({ where: { slug: req.params.slug } });
+    const existing = await prisma.article.findUnique({
+      where: { slug: req.params.slug },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        summary: true,
+        content: true,
+        heroImageUrl: true,
+        published: true,
+        publishedAt: true,
+        authorId: true
+      }
+    });
     if (!existing) {
       return sendError(res, 404, "Article not found");
     }
@@ -189,6 +255,11 @@ articleRouter.patch(
     const nextTitle = input.title ?? existing.title;
     const nextSlug = input.title ? await buildUniqueSlug(nextTitle, existing.id) : existing.slug;
     const nextPublished = input.published ?? existing.published;
+    const nextHeroImageUrl = req.file
+      ? ((uploadedHeroImagePath = await saveUploadedImage(req.file, "article")), uploadedHeroImagePath)
+      : input.heroImageUrl !== undefined
+        ? input.heroImageUrl
+        : existing.heroImageUrl;
 
     const article = await prisma.article.update({
       where: { id: existing.id },
@@ -197,13 +268,18 @@ articleRouter.patch(
         title: nextTitle,
         summary: input.summary === undefined ? existing.summary : input.summary,
         content: input.content ?? existing.content,
-        heroImageUrl: input.heroImageUrl === undefined ? existing.heroImageUrl : input.heroImageUrl,
+        ...(req.file || input.heroImageUrl !== undefined ? { heroImageUrl: nextHeroImageUrl } : {}),
         published: nextPublished,
         publishedAt: nextPublished ? existing.publishedAt ?? new Date() : null
-      }
+      },
+      select: articleEditSelect
     });
 
-    return res.json({ article });
+    if ((req.file || input.heroImageUrl !== undefined) && existing.heroImageUrl && existing.heroImageUrl !== nextHeroImageUrl) {
+      await deleteStoredImage(existing.heroImageUrl);
+    }
+
+    return res.json({ article: serializeArticle(article) });
   })
 );
 
@@ -211,7 +287,10 @@ articleRouter.delete(
   "/:slug",
   requireAuth,
   asyncHandler(async (req, res) => {
-    const existing = await prisma.article.findUnique({ where: { slug: req.params.slug } });
+    const existing = await prisma.article.findUnique({
+      where: { slug: req.params.slug },
+      select: { id: true, slug: true, authorId: true, heroImageUrl: true }
+    });
     if (!existing) {
       return sendError(res, 404, "Article not found");
     }
@@ -221,6 +300,8 @@ articleRouter.delete(
     }
 
     await prisma.article.delete({ where: { id: existing.id } });
+
+    await deleteStoredImage(existing.heroImageUrl);
 
     return res.status(204).send();
   })

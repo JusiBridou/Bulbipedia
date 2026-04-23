@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { asyncHandler } from "../middleware/async-handler";
 import { requireAdmin, requireAuth } from "../middleware/auth";
 import { sendError } from "../utils/http";
+import { deleteStoredImage } from "../utils/uploads";
 
 const adminRouter = Router();
 
@@ -46,7 +47,22 @@ adminRouter.delete(
       return sendError(res, 404, "User not found");
     }
 
+    const userAssets = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        avatarUrl: true,
+        articles: {
+          select: {
+            heroImageUrl: true
+          }
+        }
+      }
+    });
+
     await prisma.user.delete({ where: { id: userId } });
+
+    await deleteStoredImage(userAssets?.avatarUrl);
+    await Promise.all((userAssets?.articles ?? []).map((article) => deleteStoredImage(article.heroImageUrl)));
 
     console.info("[ADMIN_ACTION] user_deleted", {
       actorId: req.user!.id,
@@ -65,7 +81,13 @@ adminRouter.get(
   asyncHandler(async (_req, res) => {
     const articles = await prisma.article.findMany({
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        published: true,
+        createdAt: true,
+        updatedAt: true,
         author: {
           select: {
             id: true,
@@ -86,7 +108,11 @@ adminRouter.delete(
 
     const existing = await prisma.article.findUnique({
       where: { id: articleId },
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        heroImageUrl: true,
         author: {
           select: { username: true }
         }
@@ -98,6 +124,8 @@ adminRouter.delete(
     }
 
     await prisma.article.delete({ where: { id: articleId } });
+
+    await deleteStoredImage(existing.heroImageUrl);
 
     console.info("[ADMIN_ACTION] article_deleted", {
       actorId: req.user!.id,

@@ -10,15 +10,17 @@
 - `src/config`: chargement env et configuration runtime.
 - `src/lib`: clients partages (Prisma).
 - `src/middleware`: auth, gestion d'erreurs, wrappers async.
-- `src/routes`: endpoints par domaine (`auth`, `article`, `rating`, `health`).
+- `src/routes`: endpoints par domaine (`auth`, `article`, `rating`, `health`, `upload`).
 - `src/validators`: schemas Zod d'entree.
 - `src/utils`: utilitaires (HTTP, JWT, slug).
+- `backend/uploads`: stockage local des fichiers images servis sous `/uploads/*`.
 
 ## Contrats API
 
 Domaines principaux:
 - Auth: register, login, me.
 - Article: recherche, lecture slug, CRUD auteur.
+- Upload: televersement d'images (avatar, hero, inline markdown).
 - Rating: lecture aggregate et vote utilisateur.
 - Admin: gestion comptes et articles (liste/suppression) reservee ADMIN.
 
@@ -46,3 +48,4 @@ Domaines principaux:
 
 - Forte dependance a la qualite de `DATABASE_URL` pour toutes les operations.
 - Necessite de conserver coherence entre validators Zod et modeles Prisma.
+- Le stockage local des uploads impose un volume persistant en production.

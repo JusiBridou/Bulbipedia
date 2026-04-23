@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Menu, X, BookOpen, Shuffle, Users, Home } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, resolveMediaURL } from "@/lib/api";
 import { toast } from "@/components/ui/sonner";
 
 const LOGO_URL = "https://storage.gra.cloud.ovh.net/v1/AUTH_f872c5d9108a481eafb02f903c46dbf0/nantral-platform-prod/group/group/icon/2024/2024-12-13-bulbizart-1734109982.png";
@@ -102,7 +102,7 @@ export default function WikiHeader() {
               <>
                 {me.avatarUrl ? (
                   <img
-                    src={me.avatarUrl}
+                    src={resolveMediaURL(me.avatarUrl)}
                     alt={me.username}
                     className="w-8 h-8 rounded-full object-cover border border-white/30"
                   />
@@ -196,7 +196,7 @@ export default function WikiHeader() {
               <Link to={`/profil/${me.username}`} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-3 py-1 rounded-md hover:bg-white/10">
                 {me.avatarUrl ? (
                   <img
-                    src={me.avatarUrl}
+                    src={resolveMediaURL(me.avatarUrl)}
                     alt={me.username}
                     className="w-8 h-8 rounded-full object-cover border border-white/30"
                   />

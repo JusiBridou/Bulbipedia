@@ -110,10 +110,50 @@ function getToken() {
 	return localStorage.getItem(TOKEN_KEY);
 }
 
+function appendIfDefined(formData: FormData, key: string, value: string | boolean | Blob | null | undefined) {
+	if (value === undefined || value === null || value === "") {
+		return;
+	}
+
+	formData.append(key, value instanceof Blob ? value : String(value));
+}
+
+function appendOptionalFile(formData: FormData, key: string, file: File | null | undefined) {
+	if (!file) {
+		return;
+	}
+
+	formData.append(key, file);
+}
+
+function toMediaURL(path?: string | null) {
+	if (!path) {
+		return "";
+	}
+
+	if (/^(https?:)?\/\//i.test(path) || path.startsWith("data:") || path.startsWith("blob:")) {
+		return path;
+	}
+
+	const baseURL = getAPIBaseURL();
+	if (!baseURL) {
+		return path;
+	}
+
+	return `${baseURL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+}
+
 export const api = {
 	auth: {
-		async register(payload: { email: string; username: string; password: string; avatarUrl?: string }) {
-			const { data } = await http.post<AuthResponse>("/api/auth/register", payload);
+		async register(payload: { email: string; username: string; password: string; avatarFile?: File | null; avatarUrl?: string }) {
+			const formData = new FormData();
+			appendIfDefined(formData, "email", payload.email);
+			appendIfDefined(formData, "username", payload.username);
+			appendIfDefined(formData, "password", payload.password);
+			appendOptionalFile(formData, "avatarImage", payload.avatarFile);
+			appendIfDefined(formData, "avatarUrl", payload.avatarUrl);
+
+			const { data } = await http.post<AuthResponse>("/api/auth/register", formData);
 			setToken(data.token);
 			return data;
 		},
@@ -144,12 +184,33 @@ export const api = {
 			const { data } = await http.get<{ article: Article }>(`/api/articles/${slug}`);
 			return data.article;
 		},
-		async create(payload: { title: string; summary?: string; content: string; heroImageUrl?: string; published?: boolean }) {
-			const { data } = await http.post<{ article: Article }>("/api/articles", payload);
+		async create(payload: { title: string; summary?: string; content: string; heroImageFile?: File | null; heroImageUrl?: string; published?: boolean }) {
+			const formData = new FormData();
+			appendIfDefined(formData, "title", payload.title);
+			appendIfDefined(formData, "summary", payload.summary);
+			appendIfDefined(formData, "content", payload.content);
+			appendOptionalFile(formData, "heroImage", payload.heroImageFile);
+			appendIfDefined(formData, "heroImageUrl", payload.heroImageUrl);
+			appendIfDefined(formData, "published", payload.published ?? undefined);
+
+			const { data } = await http.post<{ article: Article }>("/api/articles", formData);
 			return data.article;
 		},
-		async update(slug: string, payload: Partial<Pick<Article, "title" | "summary" | "content" | "heroImageUrl" | "published">>) {
-			const { data } = await http.patch<{ article: Article }>(`/api/articles/${slug}`, payload);
+		async update(
+			slug: string,
+			payload: Partial<Pick<Article, "title" | "summary" | "content" | "heroImageUrl" | "published">> & {
+				heroImageFile?: File | null;
+			}
+		) {
+			const formData = new FormData();
+			appendIfDefined(formData, "title", payload.title);
+			appendIfDefined(formData, "summary", payload.summary);
+			appendIfDefined(formData, "content", payload.content);
+			appendOptionalFile(formData, "heroImage", payload.heroImageFile);
+			appendIfDefined(formData, "heroImageUrl", payload.heroImageUrl);
+			appendIfDefined(formData, "published", payload.published ?? undefined);
+
+			const { data } = await http.patch<{ article: Article }>(`/api/articles/${slug}`, formData);
 			return data.article;
 		},
 		async rate(slug: string, value: number) {
@@ -180,6 +241,15 @@ export const api = {
 			await http.delete(`/api/admin/articles/${articleId}`);
 		}
 	},
+	media: {
+		async uploadImage(image: File) {
+			const formData = new FormData();
+			formData.append("image", image);
+
+			const { data } = await http.post<{ url: string }>("/api/uploads/image", formData);
+			return data.url;
+		}
+	},
 	users: {
 		async profile(username: string) {
 			const { data } = await http.get<{ profile: PublicProfile; articles: PublicProfileArticle[] }>(
@@ -187,12 +257,19 @@ export const api = {
 			);
 			return data;
 		},
-		async updateMe(payload: { username?: string; avatarUrl?: string | null }) {
-			const { data } = await http.patch<{ user: User }>("/api/users/me", payload);
+		async updateMe(payload: { username?: string; avatarFile?: File | null; avatarUrl?: string | null }) {
+			const formData = new FormData();
+			appendIfDefined(formData, "username", payload.username);
+			appendOptionalFile(formData, "avatarImage", payload.avatarFile);
+			appendIfDefined(formData, "avatarUrl", payload.avatarUrl);
+
+			const { data } = await http.patch<{ user: User }>("/api/users/me", formData);
 			return data.user;
 		}
 	}
 };
+
+export { toMediaURL as resolveMediaURL };
 
 export function getApiErrorMessage(error: unknown): string {
 	if (axios.isAxiosError(error)) {

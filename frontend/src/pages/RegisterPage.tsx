@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { api, getApiErrorMessage } from "@/lib/api";
@@ -7,9 +7,24 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!avatarFile) {
+      setAvatarPreviewUrl("");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(avatarFile);
+    setAvatarPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [avatarFile]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -20,7 +35,7 @@ export default function RegisterPage() {
         email,
         username,
         password,
-        avatarUrl: avatarUrl.trim() ? avatarUrl.trim() : undefined
+        avatarFile
       });
       toast.success("Compte créé avec succès");
       navigate("/", { replace: true });
@@ -55,13 +70,22 @@ export default function RegisterPage() {
             placeholder="Email"
             className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)]"
           />
-          <input
-            type="url"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="URL photo de profil (optionnel)"
-            className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)]"
-          />
+          <div className="space-y-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+              className="w-full h-10 px-3 rounded-lg border border-[var(--bulbi-border)] bg-white py-1"
+            />
+            <p className="text-xs text-[var(--bulbi-text-secondary)]">Photo de profil optionnelle, format image uniquement.</p>
+            {avatarPreviewUrl && (
+              <img
+                src={avatarPreviewUrl}
+                alt="Aperçu avatar"
+                className="w-16 h-16 rounded-full object-cover border border-[var(--bulbi-border)]"
+              />
+            )}
+          </div>
           <input
             type="password"
             required
